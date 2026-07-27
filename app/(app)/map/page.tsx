@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowRight, MapPin, Navigation, Route } from "lucide-react";
 import MomentsMapLazy from "@/components/MomentsMapLazy";
 import { formatDateID } from "@/lib/format";
-import { coverSrc } from "@/lib/media";
+import { coverThumbSrc } from "@/lib/media";
 import { listMoments, type Moment } from "@/lib/moments";
 
 export const dynamic = "force-dynamic";
@@ -35,7 +35,7 @@ export default async function MapPage() {
               lat: moment.lat,
               lng: moment.lng,
               locationName: moment.locationName,
-              coverSrc: coverSrc(moment),
+              coverSrc: coverThumbSrc(moment, 200),
             }))}
             height="min(70vh, 720px)"
           />
@@ -48,7 +48,7 @@ export default async function MapPage() {
             {located.map((moment, index) => (
               <Link href={`/moment/${moment.id}`} className="place-item" key={moment.id}>
                 <span className="place-number">{String(index + 1).padStart(2, "0")}</span>
-                <span className="place-thumb"><img src={coverSrc(moment)} alt="" /></span>
+                <span className="place-thumb"><img src={coverThumbSrc(moment, 200)} alt="" loading="lazy" /></span>
                 <span className="place-copy"><small>{formatDateID(moment.date)}</small><strong>{moment.title}</strong><span>{moment.locationName}</span></span>
                 <ArrowRight size={16} />
               </Link>

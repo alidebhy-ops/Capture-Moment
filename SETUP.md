@@ -88,6 +88,34 @@ Buka http://localhost:3000 → login dengan `APP_PASSWORD` → tambah momen pert
 
 ---
 
+## Langkah 8 (opsional) — Bot Telegram
+
+Setelah aktif, kirim foto + caption ke bot dan momen langsung masuk album. Lewati langkah ini jika belum diperlukan.
+
+1. Buka [@BotFather](https://t.me/BotFather) di Telegram → kirim `/newbot` → ikuti instruksinya.
+   Salin token yang diberikan ke `.env.local` sebagai `TELEGRAM_BOT_TOKEN`.
+2. Buat secret acak untuk webhook:
+   ```
+   node -e "console.log(require('crypto').randomBytes(24).toString('hex'))"
+   ```
+   Isi hasilnya sebagai `TELEGRAM_WEBHOOK_SECRET`.
+3. Deploy dulu ke Vercel (Langkah 7) dengan kedua variabel di atas terisi, lalu daftarkan webhook:
+   ```
+   node scripts/setup-telegram.mjs https://album-kamu.vercel.app
+   ```
+4. Kirim pesan apa pun ke bot. Karena chat-mu belum diizinkan, bot membalas dengan ID chat.
+   Salin ID itu ke `TELEGRAM_ALLOWED_CHAT_IDS` (pisah koma jika lebih dari satu), lalu deploy ulang.
+5. Selesai. Cara pakainya:
+   - Kirim foto/video dengan caption — baris pertama jadi judul, sisanya jadi cerita.
+   - Kirim beberapa foto sekaligus (album) — semuanya masuk ke satu momen.
+   - Kirim lokasi setelah foto — lokasi menempel ke momen terakhir dari Telegram.
+
+Momen dari bot masuk ke koleksi **Dari Telegram** sehingga mudah dirapikan belakangan.
+
+Batasan: bot Telegram hanya dapat mengunduh berkas hingga 20MB. Video lebih besar tetap perlu diunggah lewat web.
+
+---
+
 ## Catatan & batasan
 
 - **Kuota gratis**: penyimpanan mengikuti kuota akun Google kamu (dipakai bersama Gmail/Drive). Foto dikompres otomatis di browser (~maks 1,4MB per foto), sedangkan video dibatasi maksimal 100MB per file.
@@ -95,7 +123,11 @@ Buka http://localhost:3000 → login dengan `APP_PASSWORD` → tambah momen pert
 - **Refresh token kedaluwarsa tiap 7 hari** selama OAuth consent screen berstatus **Testing**. Solusi: di halaman OAuth consent screen, klik **Publish app** (status "In production"). Tidak perlu proses verifikasi Google untuk scope yang dipakai app ini — cukup abaikan peringatannya. Setelah itu refresh token berlaku permanen (sampai dicabut manual).
 - **Foto HEIC dari iPhone** kadang gagal dikompres di browser tertentu. Kalau bermasalah, ubah setelan kamera iPhone ke "Most Compatible" (JPEG).
 - **Keamanan**: `.env.local` tidak boleh di-commit (sudah otomatis di-ignore oleh git).
-- **Rotasi sesi**: mengganti `APP_PASSWORD` tidak otomatis membatalkan cookie lama. Ganti `AUTH_SECRET` juga jika ingin memaksa seluruh perangkat login ulang.
+- **Rotasi sesi**: mengganti `APP_PASSWORD` otomatis membatalkan semua cookie login yang lama, karena sidik jari password ikut ditandatangani ke dalam token sesi. Semua perangkat akan diminta login ulang.
+- **Rate limit login**: pembatas percobaan login disimpan di memori proses, sehingga tidak berlaku lintas instance serverless dan hilang saat cold start. Pertahanan utamanya adalah perhitungan password yang sengaja lambat (PBKDF2), yang tetap berlaku di kondisi apa pun.
+- **`AUTH_SECRET` di lokal**: kalau kosong saat pengembangan, aplikasi membuat secret acak baru setiap kali server dijalankan. Aman, tapi berarti kamu logout setiap restart. Isi `AUTH_SECRET` di `.env.local` jika ingin sesi bertahan.
+- **Cache media**: foto dan video disajikan dengan header cache permanen milik browser (`private, immutable`) karena isi sebuah ID file Drive tidak pernah berubah. Mengganti foto berarti mengunggah file baru, bukan menimpa yang lama.
+- **Hapus permanen**: mengosongkan momen dari tempat sampah menghapus barisnya dari spreadsheet sekaligus file medianya di Google Drive, dan tidak dapat dibatalkan.
 
 ## Fitur yang memakai penyimpanan lokal perangkat
 

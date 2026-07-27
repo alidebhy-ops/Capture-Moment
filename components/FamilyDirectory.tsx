@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { formatDateID } from "@/lib/format";
-import { coverSrc } from "@/lib/media";
+import { coverThumbSrc } from "@/lib/media";
 import {
   FAMILY_ROLES,
   type FamilyMember,
@@ -374,8 +374,8 @@ export default function FamilyDirectory({
                 {memberMoments.length > 0 && (
                   <div className="family-cover-strip" aria-hidden="true">
                     {memberMoments.slice(0, 3).map((moment) =>
-                      coverSrc(moment) ? (
-                        <img key={moment.id} src={coverSrc(moment)} alt="" />
+                      coverThumbSrc(moment, 200) ? (
+                        <img key={moment.id} src={coverThumbSrc(moment, 200)} alt="" loading="lazy" />
                       ) : (
                         <span key={moment.id}>{moment.title.slice(0, 1)}</span>
                       )

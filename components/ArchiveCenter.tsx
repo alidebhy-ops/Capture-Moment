@@ -129,6 +129,43 @@ export default function ArchiveCenter({
     }
   }
 
+  async function purgeMoment(moment: Moment) {
+    if (restoringIds.includes(moment.id)) return;
+    const confirmed = window.confirm(
+      `Hapus permanen "${moment.title}"?\n\nCerita ini dan ${moment.media.length} media di Google Drive akan dihapus dan tidak bisa dipulihkan.`
+    );
+    if (!confirmed) return;
+
+    setRestoreError("");
+    setRestoringIds((current) => [...current, moment.id]);
+
+    try {
+      const response = await fetch(
+        `/api/moments/${moment.id}?permanent=true`,
+        { method: "DELETE" }
+      );
+      const payload = (await response.json().catch(() => null)) as {
+        moment?: Moment;
+        error?: string;
+      } | null;
+      if (!response.ok) {
+        throw new Error(payload?.error || "Momen belum dapat dihapus permanen.");
+      }
+      setMoments((current) =>
+        current.filter((item) => item.id !== moment.id)
+      );
+      router.refresh();
+    } catch (error) {
+      setRestoreError(
+        error instanceof Error
+          ? error.message
+          : "Momen belum dapat dihapus permanen."
+      );
+    } finally {
+      setRestoringIds((current) => current.filter((id) => id !== moment.id));
+    }
+  }
+
   function renderMomentList(
     list: Moment[],
     emptyMessage: string,
@@ -162,24 +199,35 @@ export default function ArchiveCenter({
               </span>
             </div>
             {restore ? (
-              <button
-                type="button"
-                className="archive-restore-button"
-                onClick={() => restoreMoment(moment)}
-                disabled={restoringIds.includes(moment.id)}
-              >
-                <RefreshCcw
-                  size={15}
-                  className={
-                    restoringIds.includes(moment.id)
-                      ? "archive-is-spinning"
-                      : undefined
-                  }
-                />
-                {restoringIds.includes(moment.id)
-                  ? "Memulihkan"
-                  : "Pulihkan"}
-              </button>
+              <div className="archive-trash-actions">
+                <button
+                  type="button"
+                  className="archive-restore-button"
+                  onClick={() => restoreMoment(moment)}
+                  disabled={restoringIds.includes(moment.id)}
+                >
+                  <RefreshCcw
+                    size={15}
+                    className={
+                      restoringIds.includes(moment.id)
+                        ? "archive-is-spinning"
+                        : undefined
+                    }
+                  />
+                  {restoringIds.includes(moment.id)
+                    ? "Memulihkan"
+                    : "Pulihkan"}
+                </button>
+                <button
+                  type="button"
+                  className="archive-purge-button"
+                  onClick={() => purgeMoment(moment)}
+                  disabled={restoringIds.includes(moment.id)}
+                >
+                  <Trash2 size={15} />
+                  Hapus permanen
+                </button>
+              </div>
             ) : (
               <Link
                 href={`/moment/${moment.id}`}
@@ -758,7 +806,8 @@ export default function ArchiveCenter({
           font-size: 0.61rem;
         }
         .archive-row-link,
-        .archive-restore-button {
+        .archive-restore-button,
+        .archive-purge-button {
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -772,12 +821,25 @@ export default function ArchiveCenter({
         .archive-row-link {
           width: 35px;
         }
-        .archive-restore-button {
+        .archive-restore-button,
+        .archive-purge-button {
           padding: 0 11px;
           font-size: 0.63rem;
           font-weight: 750;
         }
-        .archive-restore-button:disabled {
+        .archive-trash-actions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        .archive-purge-button {
+          color: var(--danger, #a32d2d);
+        }
+        .archive-purge-button:hover:not(:disabled) {
+          border-color: var(--danger, #a32d2d);
+        }
+        .archive-restore-button:disabled,
+        .archive-purge-button:disabled {
           cursor: wait;
           opacity: 0.62;
         }

@@ -1,4 +1,5 @@
-import { getSheets, getSheetId } from "./google";
+import { cache } from "react";
+import { getDrive, getSheets, getSheetId } from "./google";
 import { isDemoMode } from "./demo";
 import { demoMoments } from "./demo-data";
 import type {
@@ -198,6 +199,25 @@ async function sheetRows(): Promise<string[][]> {
   return (response.data.values ?? []) as string[][];
 }
 
+// Deduped for the lifetime of one request, so a page that needs both a single
+// moment and the full list downloads the sheet once. Write paths deliberately
+// call the uncached sheetRows() so they never act on a stale snapshot.
+const cachedSheetRows = cache(sheetRows);
+
+// Guards against acting on a row number captured before a concurrent write
+// shifted the sheet. One extra single-cell read is far cheaper than
+// overwriting or deleting the wrong family memory.
+async function assertRowStillMatches(
+  sheetRow: number,
+  id: string
+): Promise<boolean> {
+  const response = await getSheets().spreadsheets.values.get({
+    spreadsheetId: getSheetId(),
+    range: `A${sheetRow}:A${sheetRow}`,
+  });
+  return String(response.data.values?.[0]?.[0] ?? "").trim() === id;
+}
+
 function sortMoments(moments: Moment[]): Moment[] {
   return moments.sort((a, b) => {
     if (a.date !== b.date) return a.date < b.date ? 1 : -1;
@@ -211,7 +231,7 @@ export async function listMoments(
   const includeDeleted = options.includeDeleted === true;
   const moments = isDemoMode()
     ? demoStore().map((moment) => normalizeMoment(moment))
-    : (await sheetRows())
+    : (await cachedSheetRows())
     .filter((row) => row[0] && row[0] !== "id")
     .map((row) => rowToMoment(row))
     .filter((m): m is Moment => m !== null);
@@ -315,6 +335,11 @@ export async function updateMoment(
     updatedAt: new Date().toISOString(),
   });
   const sheetRow = rowIndex + 1;
+  if (!(await assertRowStillMatches(sheetRow, id))) {
+    throw new Error(
+      "Momen ini baru saja diubah dari perangkat lain. Muat ulang halaman lalu coba lagi."
+    );
+  }
   await getSheets().spreadsheets.values.update({
     spreadsheetId: getSheetId(),
     range: `A${sheetRow}:S${sheetRow}`,
@@ -333,4 +358,84 @@ export async function softDeleteMoment(id: string): Promise<Moment | null> {
 
 export async function restoreMoment(id: string): Promise<Moment | null> {
   return updateMoment(id, { deletedAt: "" });
+}
+
+// Moments live in the first tab, which is addressed by range without a title,
+// so the row removal has to resolve that tab's id the same way.
+async function firstSheetId(): Promise<number> {
+  const result = await getSheets().spreadsheets.get({
+    spreadsheetId: getSheetId(),
+    fields: "sheets.properties(sheetId,index)",
+  });
+  const sheetId = result.data.sheets?.find(
+    (sheet) => sheet.properties?.index === 0
+  )?.properties?.sheetId;
+
+  if (sheetId === undefined || sheetId === null) {
+    throw new Error("Tab momen tidak ditemukan di Google Sheets.");
+  }
+  return sheetId;
+}
+
+async function deleteDriveMedia(moment: Moment): Promise<void> {
+  const drive = getDrive();
+  await Promise.all(
+    moment.media
+      .filter((item) => item.id && !item.src)
+      .map((item) =>
+        // A file that is already gone should not block emptying the trash.
+        drive.files.delete({ fileId: item.id }).catch(() => undefined)
+      )
+  );
+}
+
+// Emptying the trash has to remove the Drive files too, otherwise the storage
+// quota keeps filling up with media nobody can reach any more.
+export async function purgeMoment(id: string): Promise<Moment | null> {
+  const current = await getMomentIncludingDeleted(id);
+  if (!current) return null;
+  if (!current.deletedAt) {
+    throw new Error(
+      "Hanya momen yang sudah berada di tempat sampah yang dapat dihapus permanen."
+    );
+  }
+
+  if (isDemoMode()) {
+    const store = demoStore();
+    const index = store.findIndex((moment) => moment.id === id);
+    if (index >= 0) store.splice(index, 1);
+    return current;
+  }
+
+  const rows = await sheetRows();
+  const rowIndex = rows.findIndex((row, index) => index > 0 && row[0] === id);
+  if (rowIndex < 0) return null;
+
+  const sheetRow = rowIndex + 1;
+  if (!(await assertRowStillMatches(sheetRow, id))) {
+    throw new Error(
+      "Momen ini baru saja diubah dari perangkat lain. Muat ulang halaman lalu coba lagi."
+    );
+  }
+
+  await deleteDriveMedia(current);
+  await getSheets().spreadsheets.batchUpdate({
+    spreadsheetId: getSheetId(),
+    requestBody: {
+      requests: [
+        {
+          deleteDimension: {
+            range: {
+              sheetId: await firstSheetId(),
+              dimension: "ROWS",
+              startIndex: rowIndex,
+              endIndex: rowIndex + 1,
+            },
+          },
+        },
+      ],
+    },
+  });
+
+  return current;
 }

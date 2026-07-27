@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { formatDateID } from "@/lib/format";
-import { coverSrc } from "@/lib/media";
+import { coverSrc, coverThumbSrc } from "@/lib/media";
 import type { Moment } from "@/lib/types";
 
 type MemoryRewindProps = {
@@ -402,8 +402,8 @@ export default function MemoryRewind({
                 key={moment.id}
                 aria-label={`Buka ${moment.title}`}
               >
-                {coverSrc(moment) ? (
-                  <img src={coverSrc(moment)} alt="" />
+                {coverThumbSrc(moment, 200) ? (
+                  <img src={coverThumbSrc(moment, 200)} alt="" loading="lazy" />
                 ) : (
                   <span>{moment.title.slice(0, 1)}</span>
                 )}

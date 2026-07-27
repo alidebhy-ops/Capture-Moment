@@ -11,9 +11,10 @@ import {
   Search,
   SlidersHorizontal,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useMemo, useState } from "react";
 import { formatDateID } from "@/lib/format";
-import { coverSrc } from "@/lib/media";
+import { coverThumbSrc } from "@/lib/media";
 import type { Moment } from "@/lib/types";
 
 function excerpt(value: string, length = 130) {
@@ -21,8 +22,24 @@ function excerpt(value: string, length = 130) {
   return clean.length > length ? `${clean.slice(0, length).trim()}…` : clean;
 }
 
-function MomentCard({ moment, listView }: { moment: Moment; listView: boolean }) {
-  const cover = coverSrc(moment);
+function MomentCard({
+  moment,
+  listView,
+  favorite,
+  pending,
+  onToggleFavorite,
+  activeTag,
+  onSelectTag,
+}: {
+  moment: Moment;
+  listView: boolean;
+  favorite: boolean;
+  pending: boolean;
+  onToggleFavorite: (moment: Moment, next: boolean) => void;
+  activeTag: string | null;
+  onSelectTag: (tag: string) => void;
+}) {
+  const cover = coverThumbSrc(moment, 400);
   const hasVideo = moment.media.some((item) => item.type === "video");
 
   return (
@@ -40,10 +57,15 @@ function MomentCard({ moment, listView }: { moment: Moment; listView: boolean })
         <button
           type="button"
           className="bookmark-button"
-          aria-label={moment.favorite ? "Hapus dari favorit" : "Simpan ke favorit"}
-          onClick={(event) => event.preventDefault()}
+          aria-label={favorite ? "Hapus dari favorit" : "Simpan ke favorit"}
+          aria-pressed={favorite}
+          disabled={pending}
+          onClick={(event) => {
+            event.preventDefault();
+            onToggleFavorite(moment, !favorite);
+          }}
         >
-          <Bookmark size={17} fill={moment.favorite ? "currentColor" : "none"} />
+          <Bookmark size={17} fill={favorite ? "currentColor" : "none"} />
         </button>
       </Link>
       <div className="moment-card-body">
@@ -56,7 +78,17 @@ function MomentCard({ moment, listView }: { moment: Moment; listView: boolean })
         </Link>
         <p>{excerpt(moment.story)}</p>
         <div className="tag-row">
-          {moment.tags.slice(0, 3).map((tag) => <span key={tag}>#{tag}</span>)}
+          {moment.tags.slice(0, 3).map((tag) => (
+            <button
+              key={tag}
+              type="button"
+              className={activeTag === tag ? "tag-chip active" : "tag-chip"}
+              aria-pressed={activeTag === tag}
+              onClick={() => onSelectTag(tag)}
+            >
+              #{tag}
+            </button>
+          ))}
         </div>
       </div>
     </article>
@@ -64,25 +96,73 @@ function MomentCard({ moment, listView }: { moment: Moment; listView: boolean })
 }
 
 export default function MomentExplorer({ moments, initialCollection = "Semua" }: { moments: Moment[]; initialCollection?: string }) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [collection, setCollection] = useState(initialCollection);
+  const [activeTag, setActiveTag] = useState<string | null>(null);
   const [listView, setListView] = useState(false);
+  // Favorites toggled from the grid are held here until the server confirms, so
+  // the card reflects the click immediately and rolls back if the save fails.
+  const [favoriteOverrides, setFavoriteOverrides] = useState<Record<string, boolean>>({});
+  const [pendingFavorite, setPendingFavorite] = useState<string | null>(null);
+
   const collections = useMemo(
     () => ["Semua", "Favorit", ...Array.from(new Set(moments.map((moment) => moment.collection)))],
     [moments]
   );
+
+  const isFavorite = useCallback(
+    (moment: Moment) => favoriteOverrides[moment.id] ?? moment.favorite,
+    [favoriteOverrides]
+  );
+
+  const toggleFavorite = useCallback(
+    async (moment: Moment, next: boolean) => {
+      setPendingFavorite(moment.id);
+      setFavoriteOverrides((current) => ({ ...current, [moment.id]: next }));
+      try {
+        const response = await fetch(`/api/moments/${moment.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ favorite: next }),
+        });
+        if (!response.ok) {
+          const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+          throw new Error(payload?.error || "Favorit belum dapat disimpan.");
+        }
+        router.refresh();
+      } catch (error) {
+        setFavoriteOverrides((current) => {
+          const rolledBack = { ...current };
+          delete rolledBack[moment.id];
+          return rolledBack;
+        });
+        window.alert(error instanceof Error ? error.message : "Favorit belum dapat disimpan.");
+      } finally {
+        setPendingFavorite(null);
+      }
+    },
+    [router]
+  );
+
+  const selectTag = useCallback((tag: string) => {
+    setActiveTag((current) => (current === tag ? null : tag));
+  }, []);
+
   const filtered = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase("id");
     return moments.filter((moment) => {
+      const favorite = favoriteOverrides[moment.id] ?? moment.favorite;
       const sameCollection =
         collection === "Semua" ||
-        (collection === "Favorit" ? moment.favorite : moment.collection === collection);
+        (collection === "Favorit" ? favorite : moment.collection === collection);
+      const matchesTag = !activeTag || moment.tags.includes(activeTag);
       const haystack = [moment.title, moment.story, moment.locationName, ...moment.tags]
         .join(" ")
         .toLocaleLowerCase("id");
-      return sameCollection && (!needle || haystack.includes(needle));
+      return sameCollection && matchesTag && (!needle || haystack.includes(needle));
     });
-  }, [collection, moments, query]);
+  }, [activeTag, collection, favoriteOverrides, moments, query]);
 
   return (
     <section className="explorer-section" aria-labelledby="all-memories-heading">
@@ -93,10 +173,10 @@ export default function MomentExplorer({ moments, initialCollection = "Semua" }:
           <p>{filtered.length} cerita ditemukan</p>
         </div>
         <div className="view-switcher" aria-label="Pilihan tampilan">
-          <button type="button" className={!listView ? "active" : ""} onClick={() => setListView(false)} aria-label="Tampilan kartu">
+          <button type="button" className={!listView ? "active" : ""} onClick={() => setListView(false)} aria-label="Tampilan kartu" aria-pressed={!listView}>
             <Grid2X2 size={17} />
           </button>
-          <button type="button" className={listView ? "active" : ""} onClick={() => setListView(true)} aria-label="Tampilan daftar">
+          <button type="button" className={listView ? "active" : ""} onClick={() => setListView(true)} aria-label="Tampilan daftar" aria-pressed={listView}>
             <List size={18} />
           </button>
         </div>
@@ -120,6 +200,7 @@ export default function MomentExplorer({ moments, initialCollection = "Semua" }:
               key={item}
               type="button"
               className={collection === item ? "active" : ""}
+              aria-pressed={collection === item}
               onClick={() => setCollection(item)}
             >
               {item}
@@ -128,16 +209,36 @@ export default function MomentExplorer({ moments, initialCollection = "Semua" }:
         </div>
       </div>
 
+      {activeTag && (
+        <div className="active-tag-row">
+          <span>Menampilkan momen bertag #{activeTag}</span>
+          <button type="button" onClick={() => setActiveTag(null)}>
+            Hapus filter tag
+          </button>
+        </div>
+      )}
+
       {filtered.length ? (
         <div className={listView ? "moments-grid list" : "moments-grid"}>
-          {filtered.map((moment) => <MomentCard key={moment.id} moment={moment} listView={listView} />)}
+          {filtered.map((moment) => (
+            <MomentCard
+              key={moment.id}
+              moment={moment}
+              listView={listView}
+              favorite={isFavorite(moment)}
+              pending={pendingFavorite === moment.id}
+              onToggleFavorite={toggleFavorite}
+              activeTag={activeTag}
+              onSelectTag={selectTag}
+            />
+          ))}
         </div>
       ) : (
         <div className="empty-search">
           <Search size={28} />
           <h3>Belum menemukan momen itu</h3>
           <p>Coba kata lain atau pilih koleksi yang berbeda.</p>
-          <button type="button" onClick={() => { setQuery(""); setCollection("Semua"); }}>
+          <button type="button" onClick={() => { setQuery(""); setCollection("Semua"); setActiveTag(null); }}>
             Hapus filter
           </button>
         </div>

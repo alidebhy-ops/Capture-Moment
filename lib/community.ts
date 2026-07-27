@@ -1,8 +1,10 @@
+import { cache } from "react";
 import {
   demoCommunityComments,
   demoCommunityReactions,
 } from "./demo-family";
 import { isDemoMode } from "./demo";
+import { ensureTabOnce } from "./sheet-setup";
 import {
   COMMUNITY_REACTIONS,
   type CommunityComment,
@@ -184,7 +186,11 @@ async function findCommunitySheet() {
   )?.properties;
 }
 
-async function ensureCommunitySheet(): Promise<number> {
+function ensureCommunitySheet(): Promise<number> {
+  return ensureTabOnce(SHEET_TITLE, setUpCommunitySheet);
+}
+
+async function setUpCommunitySheet(): Promise<number> {
   const sheets = getSheets();
   const spreadsheetId = getSheetId();
   let properties = await findCommunitySheet();
@@ -259,6 +265,10 @@ function normalizedCommunity(
   };
 }
 
+// Read paths share one download per request; writes use the uncached reader so
+// they never compute a row number from a stale snapshot.
+const cachedReadStoredCommunity = cache(readStoredCommunity);
+
 export async function getMomentCommunity(
   momentId: string
 ): Promise<MomentCommunity> {
@@ -268,7 +278,7 @@ export async function getMomentCommunity(
       normalizedCommunity(momentId, store.comments, store.reactions)
     );
   }
-  const { entries } = await readStoredCommunity();
+  const { entries } = await cachedReadStoredCommunity();
   return normalizedCommunity(
     momentId,
     entries
@@ -293,7 +303,7 @@ export async function listAllCommunity(): Promise<MomentCommunity> {
     });
   }
 
-  const { entries } = await readStoredCommunity();
+  const { entries } = await cachedReadStoredCommunity();
   return {
     comments: entries
       .map((entry) => entry.comment)

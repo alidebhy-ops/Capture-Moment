@@ -17,7 +17,7 @@ import MomentsMapLazy from "@/components/MomentsMapLazy";
 import { getMomentCommunity } from "@/lib/community";
 import { listFamilyMembers } from "@/lib/family";
 import { formatDateID } from "@/lib/format";
-import { coverSrc } from "@/lib/media";
+import { coverThumbSrc } from "@/lib/media";
 import { getMoment, listMoments } from "@/lib/moments";
 
 export const dynamic = "force-dynamic";
@@ -113,7 +113,7 @@ export default async function MomentDetailPage({ params }: PageProps<"/moment/[i
               lat: moment.lat!,
               lng: moment.lng!,
               locationName: moment.locationName,
-              coverSrc: coverSrc(moment),
+              coverSrc: coverThumbSrc(moment, 200),
             }]}
             height="340px"
             withPopupLink={false}
@@ -138,7 +138,7 @@ export default async function MomentDetailPage({ params }: PageProps<"/moment/[i
           <div className="related-grid">
             {related.map((item) => (
               <Link href={`/moment/${item.id}`} key={item.id} className="related-card">
-                {coverSrc(item) && <img src={coverSrc(item)} alt="" />}
+                {coverThumbSrc(item, 400) && <img src={coverThumbSrc(item, 400)} alt="" loading="lazy" />}
                 <div><span>{item.collection}</span><h3>{item.title}</h3><p>{formatDateID(item.date)}</p></div>
               </Link>
             ))}

@@ -1,6 +1,8 @@
+import { cache } from "react";
 import { demoPlans } from "./demo-plans";
 import { isDemoMode } from "./demo";
 import { getSheetId, getSheets } from "./google";
+import { ensureTabOnce } from "./sheet-setup";
 import {
   PLAN_CATEGORIES,
   PLAN_PRIORITIES,
@@ -390,7 +392,11 @@ async function findPlansSheet() {
   )?.properties;
 }
 
-async function ensurePlansSheet(): Promise<number> {
+function ensurePlansSheet(): Promise<number> {
+  return ensureTabOnce(SHEET_TITLE, setUpPlansSheet);
+}
+
+async function setUpPlansSheet(): Promise<number> {
   const sheets = getSheets();
   const spreadsheetId = getSheetId();
   let properties = await findPlansSheet();
@@ -459,11 +465,15 @@ async function readStoredPlans(): Promise<{
   return { sheetId, storedPlans };
 }
 
+// Read paths share one download per request; writes use the uncached reader so
+// they never compute a row number from a stale snapshot.
+const cachedReadStoredPlans = cache(readStoredPlans);
+
 export async function listPlans(): Promise<Plan[]> {
   if (isDemoMode()) {
     return sortPlans(structuredClone(demoStore()));
   }
-  const { storedPlans } = await readStoredPlans();
+  const { storedPlans } = await cachedReadStoredPlans();
   return sortPlans(storedPlans.map(({ plan }) => plan));
 }
 
@@ -472,7 +482,7 @@ export async function getPlan(id: string): Promise<Plan | null> {
     const plan = demoStore().find((item) => item.id === id);
     return plan ? structuredClone(plan) : null;
   }
-  const { storedPlans } = await readStoredPlans();
+  const { storedPlans } = await cachedReadStoredPlans();
   return storedPlans.find(({ plan }) => plan.id === id)?.plan ?? null;
 }
 

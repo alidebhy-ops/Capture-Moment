@@ -493,6 +493,13 @@ img, video { display: block; }
 .moment-card h3:hover { color: var(--accent-deep); }
 .moment-card-body > p { margin: 0; color: var(--ink-soft); font-size: 0.72rem; line-height: 1.6; }
 .tag-row { display: flex; gap: 7px; margin-top: 13px; overflow: hidden; color: var(--accent); font-size: 0.61rem; font-weight: 650; white-space: nowrap; }
+.tag-chip { border: 0; background: none; padding: 0; font: inherit; color: inherit; cursor: pointer; border-radius: 4px; }
+.tag-chip:hover { color: var(--accent-deep); text-decoration: underline; }
+.tag-chip.active { color: var(--accent-deep); text-decoration: underline; }
+.active-tag-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; color: var(--ink-soft); font-size: 0.74rem; }
+.active-tag-row button { border: 1px solid var(--line); background: none; border-radius: 999px; padding: 4px 12px; font: inherit; color: var(--accent); cursor: pointer; }
+.active-tag-row button:hover { border-color: var(--accent); }
+.bookmark-button:disabled { opacity: 0.55; cursor: progress; }
 .moments-grid.list { grid-template-columns: 1fr; }
 .moment-card.list-view { display: grid; grid-template-columns: 250px minmax(0,1fr); }
 .moment-card.list-view .moment-cover { height: 100%; min-height: 180px; aspect-ratio: auto; }
@@ -751,6 +758,8 @@ img, video { display: block; }
 .plan-progress-caption { margin-top: 6px; color: var(--ink-faint); font-size: .55rem; }
 .plan-checklist-preview { padding: 13px; border-radius: 13px; background: var(--surface-muted); }
 .plan-checklist-items { display: grid; gap: 6px; margin-top: 10px; }
+.plan-checklist-toggle { justify-self: start; margin-top: 2px; border: 0; background: none; padding: 0; font: inherit; font-size: .6rem; color: var(--accent); cursor: pointer; }
+.plan-checklist-toggle:hover { color: var(--accent-deep); text-decoration: underline; }
 .plan-checklist-items label { position: relative; display: grid; grid-template-columns: 19px minmax(0, 1fr); align-items: center; gap: 7px; color: var(--ink-soft); font-size: .62rem; cursor: pointer; }
 .plan-checklist-items input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .plan-checkbox { display: grid; width: 18px; height: 18px; place-items: center; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--field-bg); color: var(--on-accent); }

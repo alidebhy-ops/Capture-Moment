@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element -- Covers can be authenticated Drive streams. */
 import Link from "next/link";
 import { ArrowRight, Bookmark, FolderHeart, Images } from "lucide-react";
-import { coverSrc } from "@/lib/media";
+import { coverThumbSrc } from "@/lib/media";
 import { listMoments } from "@/lib/moments";
 import type { Moment } from "@/lib/types";
 
@@ -28,7 +28,7 @@ export default async function CollectionsPage() {
       {favorites.length > 0 && (
         <section className="favorite-banner">
           <div className="favorite-collage">
-            {favorites.slice(0, 3).map((moment) => <img key={moment.id} src={coverSrc(moment)} alt="" />)}
+            {favorites.slice(0, 3).map((moment) => <img key={moment.id} src={coverThumbSrc(moment, 200)} alt="" loading="lazy" />)}
           </div>
           <div className="favorite-banner-copy">
             <span className="soft-pill"><Bookmark size={14} fill="currentColor" /> Pilihan keluarga</span>
@@ -47,7 +47,7 @@ export default async function CollectionsPage() {
           {grouped.map(([name, items]) => (
             <Link href={`/?koleksi=${encodeURIComponent(name)}`} className="collection-card" key={name}>
               <div className="collection-cover">
-                {items.slice(0, 3).map((moment, index) => <img key={moment.id} src={coverSrc(moment)} alt="" data-index={index} />)}
+                {items.slice(0, 3).map((moment, index) => <img key={moment.id} src={coverThumbSrc(moment, 200)} alt="" data-index={index} loading="lazy" />)}
                 <span className="collection-icon"><FolderHeart size={19} /></span>
               </div>
               <div className="collection-card-copy">

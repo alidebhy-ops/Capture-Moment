@@ -244,8 +244,15 @@ function PlanCard({
   onStatusChange: (plan: Plan, status: PlanStatus) => void;
   onChecklistToggle: (plan: Plan, itemId: string) => void;
 }) {
+  // Only three steps fit comfortably on a card, but every step counts toward
+  // readiness — so the rest have to be reachable rather than merely counted.
+  const [showAllChecklist, setShowAllChecklist] = useState(false);
   const savingProgress = progressPercent(plan.savedAmount, plan.estimatedBudget);
   const doneItems = plan.checklist.filter((item) => item.done).length;
+  const visibleChecklist = showAllChecklist
+    ? plan.checklist
+    : plan.checklist.slice(0, 3);
+  const hiddenChecklistCount = plan.checklist.length - visibleChecklist.length;
   const readiness = readinessScore(plan);
   const overdue = (daysUntil(plan.targetDate) ?? 0) < 0 && plan.status !== "completed";
   const readinessStyle = { "--plan-progress": `${readiness}%` } as CSSProperties;
@@ -310,7 +317,7 @@ function PlanCard({
         </div>
         {plan.checklist.length > 0 ? (
           <div className="plan-checklist-items">
-            {plan.checklist.slice(0, 3).map((item) => (
+            {visibleChecklist.map((item) => (
               <label key={item.id} className={item.done ? "is-done" : ""}>
                 <input
                   type="checkbox"
@@ -322,7 +329,18 @@ function PlanCard({
                 <span>{item.label}</span>
               </label>
             ))}
-            {plan.checklist.length > 3 && <small>+{plan.checklist.length - 3} persiapan lainnya</small>}
+            {(hiddenChecklistCount > 0 || showAllChecklist) && (
+              <button
+                type="button"
+                className="plan-checklist-toggle"
+                aria-expanded={showAllChecklist}
+                onClick={() => setShowAllChecklist((current) => !current)}
+              >
+                {showAllChecklist
+                  ? "Tampilkan lebih sedikit"
+                  : `Tampilkan ${hiddenChecklistCount} persiapan lainnya`}
+              </button>
+            )}
           </div>
         ) : (
           <p className="plan-checklist-empty">Tambahkan langkah kecil agar rencana lebih mudah diwujudkan.</p>

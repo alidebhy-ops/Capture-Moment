@@ -3,11 +3,14 @@ import {
   SESSION_COOKIE,
   createSessionToken,
   sessionCookieOptions,
+  verifyPassword,
 } from "@/lib/auth";
 import { isDemoMode } from "@/lib/demo";
 
+export const runtime = "nodejs";
+
 const LOGIN_WINDOW_MS = 10 * 60 * 1000;
-const MAX_LOGIN_ATTEMPTS = 6;
+const MAX_LOGIN_ATTEMPTS = 8;
 
 type LoginAttempt = { count: number; resetAt: number };
 
@@ -22,12 +25,23 @@ function attemptsStore(): Map<string, LoginAttempt> {
   return globalThis.captureMomentLoginAttempts;
 }
 
+// Proxies append to x-forwarded-for, so the last entry is the one written by the
+// hop closest to us; the earlier entries are whatever the caller chose to send.
+// This is still best-effort — the real brake on guessing is the deliberately
+// slow password derivation in verifyPassword, which survives both header
+// spoofing and the cold starts that wipe this in-memory map.
 function clientKey(request: NextRequest): string {
-  return (
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+  const forwarded = request.headers
+    .get("x-forwarded-for")
+    ?.split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  const candidate =
+    forwarded?.[forwarded.length - 1] ||
     request.headers.get("x-real-ip")?.trim() ||
-    "local"
-  ).slice(0, 120);
+    "unknown";
+  return candidate.slice(0, 120);
 }
 
 function activeAttempt(key: string, now = Date.now()): LoginAttempt | null {
@@ -48,6 +62,14 @@ function recordFailure(key: string, now = Date.now()): void {
     count: (current?.count ?? 0) + 1,
     resetAt: current?.resetAt ?? now + LOGIN_WINDOW_MS,
   });
+
+  // The map is only ever touched by login attempts, but an attacker rotating
+  // the forwarded header could otherwise grow it without bound.
+  if (store.size > 5_000) {
+    for (const [entryKey, entry] of store) {
+      if (entry.resetAt <= now) store.delete(entryKey);
+    }
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -76,20 +98,25 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (!demo && password !== appPassword) {
+  if (!demo) {
     if (!appPassword) {
       return NextResponse.json(
         { error: "APP_PASSWORD belum diisi di environment (lihat SETUP.md)" },
         { status: 500 }
       );
     }
-    recordFailure(loginKey);
-    return NextResponse.json({ error: "Password salah" }, { status: 401 });
+    if (!(await verifyPassword(password, appPassword))) {
+      recordFailure(loginKey);
+      return NextResponse.json({ error: "Password salah" }, { status: 401 });
+    }
   }
 
   if (demo && !isDemoMode()) {
     return NextResponse.json(
-      { error: "Preview demo hanya tersedia saat penyimpanan Google belum dihubungkan" },
+      {
+        error:
+          "Preview demo hanya tersedia saat penyimpanan Google belum dihubungkan",
+      },
       { status: 403 }
     );
   }

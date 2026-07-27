@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   getMoment,
+  purgeMoment,
   softDeleteMoment,
   updateMoment,
 } from "@/lib/moments";
@@ -274,14 +275,19 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: RouteContext
 ) {
   const { id } = await params;
   if (!ID_PATTERN.test(id)) return invalidIdResponse();
 
+  // ?permanent=true empties an item out of the trash for good, media included.
+  const permanent = request.nextUrl.searchParams.get("permanent") === "true";
+
   try {
-    const moment = await softDeleteMoment(id);
+    const moment = permanent
+      ? await purgeMoment(id)
+      : await softDeleteMoment(id);
     if (!moment) {
       return NextResponse.json(
         { error: "Momen tidak ditemukan" },

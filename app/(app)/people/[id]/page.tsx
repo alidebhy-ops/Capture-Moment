@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { getFamilyMember } from "@/lib/family";
 import { formatDateID } from "@/lib/format";
-import { coverSrc } from "@/lib/media";
+import { coverThumbSrc } from "@/lib/media";
 import { listMoments } from "@/lib/moments";
 
 export const dynamic = "force-dynamic";
@@ -133,7 +133,7 @@ export default async function PersonTimelinePage({
         {moments.length ? (
           <div className="people-timeline">
             {moments.map((moment, index) => {
-              const cover = coverSrc(moment);
+              const cover = coverThumbSrc(moment, 400);
               return (
                 <article className="people-timeline-item" key={moment.id}>
                   <div className="people-timeline-date">

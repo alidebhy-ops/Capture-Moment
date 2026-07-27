@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { demoFamilyMembers } from "./demo-family";
 import { isDemoMode } from "./demo";
 import {
@@ -8,6 +9,7 @@ import {
   type FamilyRole,
 } from "./family-types";
 import { getSheetId, getSheets } from "./google";
+import { ensureTabOnce } from "./sheet-setup";
 
 export type {
   FamilyMember,
@@ -243,7 +245,11 @@ async function findMembersSheet() {
   )?.properties;
 }
 
-async function ensureMembersSheet(): Promise<number> {
+function ensureMembersSheet(): Promise<number> {
+  return ensureTabOnce(SHEET_TITLE, setUpMembersSheet);
+}
+
+async function setUpMembersSheet(): Promise<number> {
   const sheets = getSheets();
   const spreadsheetId = getSheetId();
   let properties = await findMembersSheet();
@@ -308,9 +314,13 @@ async function readStoredMembers(): Promise<{
   };
 }
 
+// Read paths share one download per request; writes use the uncached reader so
+// they never compute a row number from a stale snapshot.
+const cachedReadStoredMembers = cache(readStoredMembers);
+
 export async function listFamilyMembers(): Promise<FamilyMember[]> {
   if (isDemoMode()) return sortMembers(structuredClone(demoStore()));
-  const { members } = await readStoredMembers();
+  const { members } = await cachedReadStoredMembers();
   return sortMembers(members.map(({ member }) => member));
 }
 
@@ -321,7 +331,7 @@ export async function getFamilyMember(
     const member = demoStore().find((item) => item.id === id);
     return member ? structuredClone(member) : null;
   }
-  const { members } = await readStoredMembers();
+  const { members } = await cachedReadStoredMembers();
   return members.find(({ member }) => member.id === id)?.member ?? null;
 }
 

@@ -1,7 +1,9 @@
 import "server-only";
 
+import { cache } from "react";
 import { demoCapsules } from "./demo-capsules";
 import { isDemoMode } from "./demo";
+import { ensureTabOnce } from "./sheet-setup";
 import {
   CAPSULE_THEMES,
   type CapsuleTheme,
@@ -269,20 +271,24 @@ function sortRecords(
   });
 }
 
+// A sealed capsule may be postponed but never brought forward. Merely requiring
+// a future date would not protect anything: setting the unlock time to a minute
+// from now and waiting would break any seal on demand.
 function preventEarlyUnlock(
   current: TimeCapsuleRecord,
   updates: TimeCapsuleUpdate,
   now: Date
 ): void {
-  const isCurrentlyLocked =
-    new Date(current.unlockAt).getTime() > now.getTime();
-  if (
-    isCurrentlyLocked &&
-    updates.unlockAt &&
-    new Date(updates.unlockAt).getTime() <= now.getTime()
-  ) {
+  if (!updates.unlockAt) return;
+
+  const currentUnlockAt = new Date(current.unlockAt).getTime();
+  const isCurrentlyLocked = currentUnlockAt > now.getTime();
+  if (!isCurrentlyLocked) return;
+
+  const nextUnlockAt = new Date(updates.unlockAt).getTime();
+  if (nextUnlockAt < currentUnlockAt) {
     throw new CapsuleValidationError(
-      "Tanggal buka kapsul yang masih tersegel harus tetap berada di masa depan."
+      "Kapsul yang masih tersegel hanya dapat diundur, tidak dapat dimajukan. Hapus kapsul ini jika ingin menulis ulang dengan tanggal yang lebih awal."
     );
   }
 }
@@ -299,7 +305,11 @@ async function findCapsulesSheet() {
   )?.properties;
 }
 
-async function ensureCapsulesSheet(): Promise<number> {
+function ensureCapsulesSheet(): Promise<number> {
+  return ensureTabOnce(SHEET_TITLE, setUpCapsulesSheet);
+}
+
+async function setUpCapsulesSheet(): Promise<number> {
   const sheets = getSheets();
   const spreadsheetId = getSheetId();
   let properties = await findCapsulesSheet();
@@ -365,12 +375,16 @@ async function readStoredCapsules(): Promise<{
   return { sheetId, capsules };
 }
 
+// Read paths share one download per request; writes use the uncached reader so
+// they never compute a row number from a stale snapshot.
+const cachedReadStoredCapsules = cache(readStoredCapsules);
+
 export async function listTimeCapsules(
   now = new Date()
 ): Promise<TimeCapsule[]> {
   const records = isDemoMode()
     ? structuredClone(demoStore())
-    : (await readStoredCapsules()).capsules.map(({ record }) => record);
+    : (await cachedReadStoredCapsules()).capsules.map(({ record }) => record);
   return sortRecords(records.map((record) => toPublicCapsule(record, now)), now);
 }
 
@@ -380,7 +394,7 @@ export async function getTimeCapsule(
 ): Promise<TimeCapsule | null> {
   const record = isDemoMode()
     ? demoStore().find((item) => item.id === id)
-    : (await readStoredCapsules()).capsules.find(
+    : (await cachedReadStoredCapsules()).capsules.find(
         (item) => item.record.id === id
       )?.record;
   return record ? toPublicCapsule(record, now) : null;

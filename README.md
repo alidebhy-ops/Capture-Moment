@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CaptureMoment
 
-## Getting Started
+CaptureMoment adalah ruang kenangan keluarga: foto, video, cerita, orang, tempat, dan rencana hidup bersama dalam satu pengalaman yang hangat. Aplikasi langsung berisi data demo realistis ketika credential Google belum diisi.
 
-First, run the development server:
+## Fitur utama
+
+- **Album cerita** — foto/video, cerita panjang, koleksi, tag, suasana, lokasi, favorit, edit, soft-delete, dan pemulihan.
+- **Hari Ini di Masa Lalu** — kilas balik berdasarkan tanggal, memory roulette, recap bulanan, dan recap tahunan.
+- **Kalender keluarga** — menggabungkan momen, rencana, dan jadwal terbukanya kapsul waktu.
+- **Kapsul waktu** — pesan terkunci untuk masa depan; isi tidak dikirim ke browser sebelum tanggal buka.
+- **Profil keluarga & People Timeline** — profil anggota serta semua momen yang berkaitan dengan mereka.
+- **Cerita kolaboratif** — penulis, orang yang hadir, komentar, dan reaksi pada detail momen.
+- **Story Studio** — prompt penulisan, dikte suara, autosave draf lokal, preview media, dan mode edit.
+- **Smart Inbox** — impor massal, pembacaan tanggal/GPS EXIF, deteksi duplikat, dan pengelompokan media.
+- **Arsip & backup** — health check, trash/restore, ekspor JSON/CSV, serta photobook siap cetak/PDF.
+- **Capture Pocket (PWA)** — dapat dipasang di perangkat, shortcut cepat, capture kamera, dan halaman offline.
+- **Wishlist & planner** — anggaran, tabungan, checklist, target waktu, dan konversi rencana menjadi momen.
+- **Peta perjalanan** — visualisasi seluruh momen berlokasi dengan Leaflet + OpenStreetMap.
+- **Tema personal** — mode terang, gelap, otomatis mengikuti perangkat, serta lima pilihan warna aksen yang tersimpan.
+
+## Mulai
+
+1. Jalankan `npm install`.
+2. Jalankan `npm run dev`.
+3. Buka [http://localhost:3000](http://localhost:3000).
+4. Pilih **Masuk ke preview demo** untuk menjelajahi semua fitur dan data contoh.
+
+Untuk menyimpan data nyata di Google Drive dan Google Sheets, ikuti [SETUP.md](./SETUP.md).
+
+## Halaman
+
+| Rute | Isi |
+|---|---|
+| `/` | Beranda, sorotan, statistik, launcher fitur, pencarian, filter, dan linimasa |
+| `/memories` | Hari Ini di Masa Lalu, memory roulette, recap bulan/tahun |
+| `/calendar` | Kalender gabungan momen, rencana, dan kapsul |
+| `/plans` | Wishlist, planner, anggaran, checklist, dan target waktu |
+| `/people` | Direktori profil anggota keluarga |
+| `/people/[id]` | People Timeline dan semua cerita terkait |
+| `/capsules` | Kapsul waktu dan pesan masa depan |
+| `/inbox` | Smart Inbox untuk impor media massal |
+| `/collections` | Koleksi tematik dan momen favorit |
+| `/map` | Peta semua momen dan daftar tempat |
+| `/moment/[id]` | Galeri, artikel, orang terkait, komentar, reaksi, dan peta |
+| `/moment/[id]/edit` | Edit cerita, media, orang, dan metadata momen |
+| `/new` | Story Studio untuk membuat cerita baru |
+| `/archive` | Backup, trash, restore, dan pintasan photobook |
+| `/photobook` | Album keluarga siap cetak atau simpan sebagai PDF |
+| `/settings` | Pengaturan mode tampilan dan warna aksen |
+| `/offline` | Pengalaman fallback ketika PWA sedang offline |
+| `/login` | Gerbang password keluarga dan akses preview demo |
+
+## Penyimpanan
+
+- Media asli tersimpan di Google Drive.
+- Momen dan metadata tersimpan di sheet utama.
+- `Plans`, `TimeCapsules`, `Members`, dan `Community` dibuat otomatis sebagai tab tambahan.
+- Draf Story Studio tersimpan lokal di perangkat. Smart Inbox membaca dan mengelompokkan media di browser, lalu mengunggahnya saat pengguna memilih **Jadikan momen**.
+- Mode demo menggunakan data contoh dan tidak membutuhkan layanan eksternal.
+
+Backup JSON sengaja tidak menyertakan file media asli maupun isi pesan kapsul yang masih tersegel. Media tetap berada di Google Drive dan pesan kapsul baru masuk payload setelah tanggal bukanya.
+
+Profil anggota saat ini adalah identitas di dalam satu ruang keluarga yang memakai password bersama, bukan akun login terpisah. Jika aplikasi akan dipakai banyak keluarga atau membutuhkan izin individual, tambahkan autentikasi per anggota dan database transaksional.
+
+## Validasi
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run lint
+npx tsc --noEmit
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Teknologi
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Next.js 16 (App Router), React 19, TypeScript, Google Drive & Sheets API, Leaflet, EXIF, browser image compression, dan Progressive Web App.

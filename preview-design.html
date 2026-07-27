@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CaptureMoment — Preview Desain</title>
+<style>
+  :root {
+    --page-bg: #f4f1ea;
+    --page-text: #2b2723;
+    --page-muted: #6b6257;
+    --frame-bar: #e9e4d9;
+    --frame-border: #d8d2c4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page-bg: #1c1a17;
+      --page-text: #ece7de;
+      --page-muted: #a89f92;
+      --frame-bar: #2a2723;
+      --frame-border: #3a362f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--page-bg); margin: 0; }
+  .wrap {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 40px 20px 64px;
+    color: var(--page-text);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.6;
+  }
+  .serif { font-family: "Fraunces", Georgia, "Times New Roman", serif; }
+  .intro h1 { font-size: 34px; margin: 0 0 8px; font-weight: 600; text-wrap: balance; }
+  .intro p { color: var(--page-muted); margin: 0; max-width: 640px; }
+  .section { margin-top: 56px; }
+  .section > h2 { font-size: 22px; font-weight: 600; margin: 0 0 4px; text-wrap: balance; }
+  .section > .route {
+    display: inline-block; font-family: ui-monospace, Consolas, monospace;
+    font-size: 13px; color: #b8502f; background: rgba(184, 80, 47, 0.12);
+    padding: 2px 8px; border-radius: 6px; margin-bottom: 6px;
+  }
+  .section > p.caption { color: var(--page-muted); font-size: 15px; margin: 6px 0 18px; max-width: 640px; }
+
+  .frame {
+    border: 1px solid var(--frame-border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.10);
+  }
+  .frame-bar {
+    background: var(--frame-bar);
+    padding: 9px 14px;
+    display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid var(--frame-border);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .frame-url {
+    flex: 1; margin-left: 8px; background: rgba(255,255,255,0.55);
+    border-radius: 7px; padding: 3px 12px; font-size: 12px;
+    font-family: ui-monospace, Consolas, monospace; color: #6b6257;
+    max-width: 420px;
+  }
+  @media (prefers-color-scheme: dark) { .frame-url { background: rgba(0,0,0,0.25); color: #a89f92; } }
+
+  /* ===== App surface (selalu light — sesuai desain app asli) ===== */
+  .app { background: #faf7f1; color: #2b2723; font-size: 14px; }
+  .app-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 22px; border-bottom: 1px solid #e7e0d5;
+    background: rgba(250,247,241,0.92); flex-wrap: wrap; gap: 8px;
+  }
+  .brand { font-weight: 600; font-size: 17px; color: #8f3c21; }
+  .nav-links { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .nav-link { color: #6b6257; padding: 5px 11px; border-radius: 8px; font-size: 13px; }
+  .nav-link.active { background: #f7e6de; color: #8f3c21; }
+  .btn-accent {
+    background: #b8502f; color: #fff; padding: 6px 12px; border-radius: 8px;
+    font-size: 13px; font-weight: 500; border: none;
+  }
+  .app-main { padding: 26px 22px 34px; }
+  .h-page { font-size: 26px; font-weight: 600; margin: 0 0 4px; }
+  .sub { color: #6b6257; margin: 0 0 20px; font-size: 14px; }
+  .app-footer {
+    border-top: 1px solid #e7e0d5; padding: 12px; text-align: center;
+    color: #6b6257; font-size: 12px;
+  }
+
+  /* Login */
+  .login-wrap { padding: 56px 20px; display: flex; justify-content: center; }
+  .login-box { width: 100%; max-width: 330px; text-align: center; }
+  .login-title { font-size: 30px; font-weight: 600; color: #8f3c21; margin: 0; }
+  .login-sub { color: #6b6257; font-size: 13.5px; margin: 8px 0 22px; }
+  .card {
+    background: #fff; border: 1px solid #e7e0d5; border-radius: 16px;
+    padding: 20px; text-align: left;
+  }
+  .field-label { display: block; font-size: 12.5px; font-weight: 500; margin-bottom: 6px; }
+  .input {
+    width: 100%; border: 1px solid #e7e0d5; border-radius: 8px;
+    padding: 8px 10px; font-size: 13px; background: #fff; color: #2b2723;
+    font-family: inherit;
+  }
+  .btn-full { width: 100%; margin-top: 16px; padding: 9px; border-radius: 8px; font-size: 14px; }
+
+  /* Timeline */
+  .grid-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 760px) { .grid-cards { grid-template-columns: 1fr; } }
+  .moment-card {
+    background: #fff; border: 1px solid #e7e0d5; border-radius: 16px;
+    overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .moment-card svg.photo { display: block; width: 100%; height: auto; }
+  .mc-body { padding: 13px 15px 15px; }
+  .mc-date { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: #6b6257; }
+  .mc-title { font-size: 16.5px; font-weight: 600; margin: 3px 0 3px; }
+  .mc-story { font-size: 12.5px; color: #6b6257; margin: 0; }
+  .mc-loc { font-size: 11.5px; color: #6b6257; margin-top: 8px; display: flex; align-items: center; gap: 4px; }
+
+  /* Detail */
+  .back { font-size: 12.5px; color: #6b6257; }
+  .d-meta { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: #6b6257; margin: 14px 0 6px; }
+  .d-title { font-size: 34px; font-weight: 600; line-height: 1.15; margin: 0 0 18px; }
+  .d-hero { border-radius: 16px; overflow: hidden; border: 1px solid #e7e0d5; }
+  .d-hero svg { display: block; width: 100%; height: auto; }
+  .d-thumbs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 12px; }
+  .d-thumbs svg { display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid #e7e0d5; }
+  .d-story { margin: 20px 0 24px; font-size: 14.5px; line-height: 1.75; max-width: 640px; }
+  .h-sec { font-size: 18px; font-weight: 600; margin: 0 0 10px; }
+
+  /* Map */
+  .map-box { border: 1px solid #e7e0d5; border-radius: 16px; overflow: hidden; position: relative; }
+  .map-box svg { display: block; width: 100%; height: auto; }
+  .map-popup {
+    position: absolute; width: 158px; background: #fff; border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.18); padding: 8px;
+  }
+  .map-popup svg { border-radius: 8px; width: 100%; height: auto; display: block; border: none; }
+  .map-popup .p-title { font-size: 12.5px; font-weight: 600; margin: 6px 0 1px; }
+  .map-popup .p-loc { font-size: 10.5px; color: #6b6257; margin: 0 0 3px; }
+  .map-popup .p-link { font-size: 11.5px; color: #b8502f; }
+
+  /* Form */
+  .form-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 600px) { .form-grid2 { grid-template-columns: 1fr; } }
+  .form-row { margin-bottom: 16px; }
+  .upload-box {
+    border: 2px dashed #e7e0d5; border-radius: 14px; background: rgba(255,255,255,0.6);
+    padding: 26px; text-align: center; color: #6b6257; font-size: 13.5px;
+  }
+  .up-thumbs { display: flex; gap: 10px; margin-top: 10px; }
+  .up-thumbs svg { width: 84px; height: 84px; border-radius: 10px; border: 1px solid #e7e0d5; display: block; }
+  .coords { font-size: 12.5px; color: #6b6257; margin-top: 8px; }
+  .coords a { color: #b8502f; }
+
+  .note {
+    margin-top: 48px; padding: 16px 18px; border-radius: 12px;
+    border: 1px solid var(--frame-border); color: var(--page-muted); font-size: 14px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="intro">
+    <h1 class="serif">CaptureMoment — preview desain</h1>
+    <p>Gambaran tampilan jadi dari album momen keluarga kamu, diisi data contoh. Warna, tipografi, dan tata letak di bawah ini sama persis dengan aplikasi yang sudah dibangun.</p>
+  </div>
+
+  <!-- ================= LOGIN ================= -->
+  <div class="section">
+    <span class="route">/login</span>
+    <h2>Gerbang masuk</h2>
+    <p class="caption">Satu password untuk seluruh keluarga. Setelah masuk sekali, sesi bertahan 30 hari.</p>
+    <div class="frame">
+      <div class="frame-bar">
+        <span class="dot" style="background:#e8695a"></span><span class="dot" style="background:#f0b03f"></span><span class="dot" style="background:#7fbf6a"></span>
+        <span class="frame-url">capturemoment.vercel.app/login</span>
+      </div>
+      <div class="app">
+        <div class="login-wrap">
+          <div class="login-box">
+            <p class="login-title serif">CaptureMoment</p>
+            <p class="login-sub">Album momen keluarga — masukkan password untuk membuka</p>
+            <div class="card">
+              <span class="field-label">Password keluarga</span>
+              <div class="input">••••••••••</div>
+              <button class="btn-accent btn-full">Buka album</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TIMELINE ================= -->
+  <div class="section">
+    <span class="route">/</span>
+    <h2>Linimasa momen</h2>
+    <p class="caption">Semua momen tersusun dari yang terbaru — foto cover, tanggal, cuplikan cerita, dan lokasinya.</p>
+    <div class="frame">
+      <div class="frame-bar">
+        <span class="dot" style="background:#e8695a"></span><span class="dot" style="background:#f0b03f"></span><span class="dot" style="background:#7fbf6a"></span>
+        <span class="frame-url">capturemoment.vercel.app</span>
+      </div>
+      <div class="app">
+        <div class="app-nav">
+          <span class="brand serif">CaptureMoment</span>
+          <span class="nav-links">
+            <span class="nav-link active">Linimasa</span>
+            <span class="nav-link">Peta</span>
+            <span class="btn-accent">+ Momen baru</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b6257" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-left:6px"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </span>
+        </div>
+        <div class="app-main">
+          <p class="h-page serif">Linimasa momen</p>
+          <p class="sub">Kumpulan cerita dan kenangan keluarga, dari yang terbaru.</p>
+          <div class="grid-cards">
+
+            <div class="moment-card">
+              <svg class="photo" viewBox="0 0 400 300" role="img" aria-label="Ilustrasi matahari terbit di Bromo">
+                <rect width="400" height="300" fill="#fde4c8"/>
+                <circle cx="290" cy="105" r="38" fill="#f0a04b"/>
+                <path d="M0 200 L90 120 L150 185 L215 130 L290 205 L400 150 L400 300 L0 300 Z" fill="#8a6d5c"/>
+                <path d="M0 240 L110 180 L210 245 L320 195 L400 235 L400 300 L0 300 Z" fill="#5d4a3f"/>
+                <ellipse cx="120" cy="262" rx="150" ry="26" fill="#f5ebe0" opacity="0.75"/>
+              </svg>
+              <div class="mc-body">
+                <p class="mc-date">12 Juni 2026</p>
+                <p class="mc-title serif">Liburan ke Bromo</p>
+                <p class="mc-story">Berangkat jam 3 pagi demi sunrise. Dingin, ngantuk, tapi begitu matahari muncul semua terbayar...</p>
+                <p class="mc-loc">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Gunung Bromo, Jawa Timur
+                </p>
+              </div>
+            </div>
+
+            <div class="moment-card">
+              <svg class="photo" viewBox="0 0 400 300" role="img" aria-label="Ilustrasi kue ulang tahun">
+                <rect width="400" height="300" fill="#f7e6de"/>
+                <rect x="120" y="150" width="160" height="80" rx="10" fill="#e8927c"/>
+                <rect x="140" y="115" width="120" height="45" rx="8" fill="#f5c8b8"/>
+                <rect x="196" y="78" width="8" height="40" fill="#b8502f"/>
+                <ellipse cx="200" cy="72" rx="7" ry="10" fill="#f0a04b"/>
+                <rect x="80" y="228" width="240" height="14" rx="7" fill="#d9c4b5"/>
+              </svg>
+              <div class="mc-body">
+                <p class="mc-date">3 Mei 2026</p>
+                <p class="mc-title serif">Ulang tahun Ibu ke-50</p>
+                <p class="mc-story">Kejutan kecil di rumah. Ibu pura-pura tidak tahu padahal kami yakin beliau sudah curiga dari kemarin...</p>
+                <p class="mc-loc">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Rumah, Makassar
+                </p>
+              </div>
+            </div>
+
+            <div class="moment-card">
+              <svg class="photo" viewBox="0 0 400 300" role="img" aria-label="Ilustrasi senja di Pantai Losari">
+                <rect width="400" height="300" fill="#fcd9b0"/>
+                <circle cx="200" cy="170" r="34" fill="#f0824b"/>
+                <rect x="0" y="180" width="400" height="120" fill="#5f8fa8"/>
+                <path d="M0 180 H400 V192 Q300 184 200 192 Q100 200 0 190 Z" fill="#7fa8bd"/>
+                <rect x="298" y="118" width="5" height="70" fill="#5d4a3f"/>
+                <path d="M300 70 Q345 95 302 122 Z" fill="#b8502f"/>
+              </svg>
+              <div class="mc-body">
+                <p class="mc-date">21 Maret 2026</p>
+                <p class="mc-title serif">Senja di Pantai Losari</p>
+                <p class="mc-story">Jalan sore dadakan yang berubah jadi maraton pisang epe. Adik menghabiskan tiga porsi sendirian...</p>
+                <p class="mc-loc">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                  Pantai Losari, Makassar
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <div class="app-footer">Album momen keluarga · tersimpan di Google Drive &amp; Sheets</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= DETAIL ================= -->
+  <div class="section">
+    <span class="route">/moment/a1b2c3d4</span>
+    <h2>Halaman cerita momen</h2>
+    <p class="caption">Setiap momen punya halamannya sendiri: galeri foto, cerita lengkap, dan peta lokasi — seperti artikel blog pribadi.</p>
+    <div class="frame">
+      <div class="frame-bar">
+        <span class="dot" style="background:#e8695a"></span><span class="dot" style="background:#f0b03f"></span><span class="dot" style="background:#7fbf6a"></span>
+        <span class="frame-url">capturemoment.vercel.app/moment/a1b2c3d4</span>
+      </div>
+      <div class="app">
+        <div class="app-nav">
+          <span class="brand serif">CaptureMoment</span>
+          <span class="nav-links">
+            <span class="nav-link">Linimasa</span>
+            <span class="nav-link">Peta</span>
+            <span class="btn-accent">+ Momen baru</span>
+          </span>
+        </div>
+        <div class="app-main" style="max-width:660px;margin:0 auto;">
+          <span class="back">← Kembali ke linimasa</span>
+          <p class="d-meta">12 Juni 2026 · Gunung Bromo, Jawa Timur</p>
+          <p class="d-title serif">Liburan ke Bromo</p>
+          <div class="d-hero">
+            <svg viewBox="0 0 660 340" role="img" aria-label="Foto utama: sunrise di Bromo">
+              <rect width="660" height="340" fill="#fde4c8"/>
+              <circle cx="470" cy="118" r="52" fill="#f0a04b"/>
+              <path d="M0 225 L150 128 L250 208 L360 140 L480 228 L660 165 L660 340 L0 340 Z" fill="#8a6d5c"/>
+              <path d="M0 268 L180 200 L340 272 L520 215 L660 258 L660 340 L0 340 Z" fill="#5d4a3f"/>
+              <ellipse cx="200" cy="292" rx="240" ry="30" fill="#f5ebe0" opacity="0.75"/>
+            </svg>
+          </div>
+          <div class="d-thumbs">
+            <svg viewBox="0 0 200 200" role="img" aria-label="Foto: jeep di lautan pasir">
+              <rect width="200" height="200" fill="#e8d5bd"/>
+              <rect x="55" y="95" width="90" height="42" rx="8" fill="#5d7a5a"/>
+              <rect x="72" y="76" width="56" height="26" rx="6" fill="#7a9678"/>
+              <circle cx="78" cy="142" r="14" fill="#3a362f"/>
+              <circle cx="122" cy="142" r="14" fill="#3a362f"/>
+              <ellipse cx="100" cy="176" rx="80" ry="10" fill="#d9bf9d"/>
+            </svg>
+            <svg viewBox="0 0 200 200" role="img" aria-label="Foto: keluarga berpose">
+              <rect width="200" height="200" fill="#fcd9b0"/>
+              <circle cx="70" cy="90" r="17" fill="#b8502f"/>
+              <rect x="55" y="110" width="30" height="45" rx="10" fill="#b8502f"/>
+              <circle cx="115" cy="85" r="20" fill="#8f3c21"/>
+              <rect x="97" y="108" width="36" height="52" rx="11" fill="#8f3c21"/>
+              <circle cx="152" cy="95" r="14" fill="#e8927c"/>
+              <rect x="140" y="112" width="24" height="38" rx="9" fill="#e8927c"/>
+            </svg>
+            <svg viewBox="0 0 200 200" role="img" aria-label="Foto: kawah Bromo">
+              <rect width="200" height="200" fill="#cbd8dc"/>
+              <path d="M0 130 L70 60 L130 125 L200 75 L200 200 L0 200 Z" fill="#6b6257"/>
+              <ellipse cx="100" cy="52" rx="46" ry="14" fill="#f5f0e8" opacity="0.9"/>
+              <ellipse cx="112" cy="34" rx="34" ry="11" fill="#f5f0e8" opacity="0.7"/>
+            </svg>
+          </div>
+          <p class="d-story">Berangkat jam 3 pagi demi mengejar sunrise di Penanjakan. Dingin, ngantuk, dan jalanan berkabut — tapi begitu matahari muncul dari balik Semeru, semua langsung terbayar. Ayah sibuk memotret, Ibu sibuk menahan topi yang hampir terbang, dan kami berdua cuma bisa berdiri terdiam.
+          <br><br>Turun ke lautan pasir naik jeep, lanjut mendaki tangga menuju kawah. Bau belerangnya kuat, tapi pemandangan dari atas tidak ada duanya.</p>
+          <p class="h-sec serif">Lokasi momen</p>
+          <div class="map-box">
+            <svg viewBox="0 0 660 220" role="img" aria-label="Peta mini lokasi Bromo">
+              <rect width="660" height="220" fill="#d6e4ea"/>
+              <path d="M40 150 Q150 70 320 105 Q470 135 640 85 L660 100 L660 220 L0 220 L0 170 Z" fill="#e9e2d0"/>
+              <path d="M200 220 Q260 170 350 190 Q430 208 470 220 Z" fill="#dcd2b8"/>
+              <path d="M330 155 l0 -30 a13 13 0 1 1 0.1 0 Z" fill="#b8502f"/>
+              <circle cx="330" cy="112" r="5.5" fill="#fff"/>
+            </svg>
+          </div>
+        </div>
+        <div class="app-footer">Album momen keluarga · tersimpan di Google Drive &amp; Sheets</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= MAP ================= -->
+  <div class="section">
+    <span class="route">/map</span>
+    <h2>Peta semua momen</h2>
+    <p class="caption">Setiap momen yang punya lokasi muncul sebagai pin. Klik pin → popup kecil berisi foto dan link ke ceritanya. (Di app asli, peta memakai OpenStreetMap sungguhan yang bisa digeser dan di-zoom.)</p>
+    <div class="frame">
+      <div class="frame-bar">
+        <span class="dot" style="background:#e8695a"></span><span class="dot" style="background:#f0b03f"></span><span class="dot" style="background:#7fbf6a"></span>
+        <span class="frame-url">capturemoment.vercel.app/map</span>
+      </div>
+      <div class="app">
+        <div class="app-nav">
+          <span class="brand serif">CaptureMoment</span>
+          <span class="nav-links">
+            <span class="nav-link">Linimasa</span>
+            <span class="nav-link active">Peta</span>
+            <span class="btn-accent">+ Momen baru</span>
+          </span>
+        </div>
+        <div class="app-main">
+          <p class="h-page serif">Peta momen</p>
+          <p class="sub">3 momen tersebar di peta — klik pin untuk melihat ceritanya.</p>
+          <div class="map-box">
+            <svg viewBox="0 0 900 380" role="img" aria-label="Peta ilustratif Indonesia dengan tiga pin momen">
+              <rect width="900" height="380" fill="#d6e4ea"/>
+              <path d="M60 150 Q95 120 150 132 Q210 145 235 130 L250 155 Q200 185 150 178 Q95 172 60 150 Z" fill="#e9e2d0"/>
+              <path d="M120 60 Q170 40 210 62 Q240 80 235 110 Q200 125 165 112 Q130 100 120 60 Z" fill="#e9e2d0"/>
+              <path d="M300 210 Q380 190 470 205 Q560 220 640 200 L655 225 Q560 250 460 238 Q370 228 300 235 Z" fill="#e9e2d0"/>
+              <path d="M500 70 Q530 45 560 68 Q580 90 570 120 Q595 135 585 165 Q560 175 548 150 Q530 160 515 140 Q495 110 500 70 Z" fill="#e9e2d0"/>
+              <path d="M680 90 Q740 70 800 95 Q850 115 860 150 Q800 165 740 150 Q695 135 680 90 Z" fill="#e9e2d0"/>
+              <path d="M310 90 Q360 75 405 92 Q430 105 425 135 Q380 148 340 135 Q315 120 310 90 Z" fill="#dcd2b8"/>
+
+              <path d="M610 212 l0 -34 a15 15 0 1 1 0.1 0 Z" fill="#b8502f"/>
+              <circle cx="610" cy="163" r="6" fill="#fff"/>
+              <path d="M508 158 l0 -34 a15 15 0 1 1 0.1 0 Z" fill="#b8502f"/>
+              <circle cx="508" cy="109" r="6" fill="#fff"/>
+              <path d="M535 168 l0 -34 a15 15 0 1 1 0.1 0 Z" fill="#8f3c21"/>
+              <circle cx="535" cy="119" r="6" fill="#fff"/>
+            </svg>
+            <div class="map-popup" style="right:23%;top:6%;">
+              <svg viewBox="0 0 200 110" role="img" aria-label="Thumbnail Bromo">
+                <rect width="200" height="110" fill="#fde4c8"/>
+                <circle cx="140" cy="40" r="18" fill="#f0a04b"/>
+                <path d="M0 78 L55 42 L95 74 L135 50 L200 80 L200 110 L0 110 Z" fill="#5d4a3f"/>
+              </svg>
+              <p class="p-title">Liburan ke Bromo</p>
+              <p class="p-loc">Gunung Bromo, Jawa Timur</p>
+              <span class="p-link">Lihat momen →</span>
+            </div>
+          </div>
+        </div>
+        <div class="app-footer">Album momen keluarga · tersimpan di Google Drive &amp; Sheets</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= FORM ================= -->
+  <div class="section">
+    <span class="route">/new</span>
+    <h2>Tambah momen baru</h2>
+    <p class="caption">Foto dikompres otomatis di browser sebelum diunggah ke Drive. Kalau foto punya data GPS, lokasi terisi sendiri — atau tinggal klik peta.</p>
+    <div class="frame">
+      <div class="frame-bar">
+        <span class="dot" style="background:#e8695a"></span><span class="dot" style="background:#f0b03f"></span><span class="dot" style="background:#7fbf6a"></span>
+        <span class="frame-url">capturemoment.vercel.app/new</span>
+      </div>
+      <div class="app">
+        <div class="app-nav">
+          <span class="brand serif">CaptureMoment</span>
+          <span class="nav-links">
+            <span class="nav-link">Linimasa</span>
+            <span class="nav-link">Peta</span>
+            <span class="btn-accent">+ Momen baru</span>
+          </span>
+        </div>
+        <div class="app-main" style="max-width:600px;">
+          <p class="h-page serif">Abadikan momen baru</p>
+          <p class="sub">Foto akan disimpan ke Google Drive, cerita &amp; lokasi ke Google Sheets.</p>
+
+          <div class="form-row">
+            <span class="field-label">Judul momen *</span>
+            <div class="input">Kemah keluarga di Malino</div>
+          </div>
+          <div class="form-grid2 form-row">
+            <div>
+              <span class="field-label">Tanggal *</span>
+              <div class="input">17/07/2026</div>
+            </div>
+            <div>
+              <span class="field-label">Nama lokasi</span>
+              <div class="input">Malino, Gowa</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <span class="field-label">Cerita</span>
+            <div class="input" style="min-height:74px;color:#6b6257;">Pertama kalinya kami kemah bareng. Tenda sempat roboh kena angin, tapi api unggun dan jagung bakarnya juara...</div>
+          </div>
+          <div class="form-row">
+            <span class="field-label">Foto</span>
+            <div class="upload-box">+ Pilih foto (bisa lebih dari satu)</div>
+            <div class="up-thumbs">
+              <svg viewBox="0 0 100 100" role="img" aria-label="Preview foto tenda">
+                <rect width="100" height="100" fill="#dbe8d8"/>
+                <path d="M20 75 L50 30 L80 75 Z" fill="#5d7a5a"/>
+                <path d="M43 75 L50 52 L57 75 Z" fill="#3f5741"/>
+              </svg>
+              <svg viewBox="0 0 100 100" role="img" aria-label="Preview foto api unggun">
+                <rect width="100" height="100" fill="#3a362f"/>
+                <path d="M50 30 Q62 48 55 60 Q68 58 66 74 Q58 84 50 82 Q40 84 34 74 Q32 58 45 60 Q38 48 50 30 Z" fill="#f0a04b"/>
+                <rect x="28" y="80" width="44" height="7" rx="3.5" fill="#8a6d5c"/>
+              </svg>
+            </div>
+          </div>
+          <div class="form-row">
+            <span class="field-label">Lokasi di peta</span>
+            <p style="font-size:12.5px;color:#6b6257;margin:2px 0 8px;">Klik peta untuk menandai lokasi momen. <span style="color:#8f3c21;">Lokasi terisi otomatis dari GPS foto.</span></p>
+            <div class="map-box">
+              <svg viewBox="0 0 600 190" role="img" aria-label="Peta pemilih lokasi dengan marker">
+                <rect width="600" height="190" fill="#d6e4ea"/>
+                <path d="M180 190 Q220 60 300 55 Q370 60 380 120 Q420 130 415 175 Q390 190 370 178 Q340 190 310 180 Q250 195 180 190 Z" fill="#e9e2d0"/>
+                <path d="M450 40 Q510 25 560 50 Q590 70 585 110 Q530 122 480 105 Q455 80 450 40 Z" fill="#e9e2d0"/>
+                <path d="M305 118 l0 -32 a14 14 0 1 1 0.1 0 Z" fill="#b8502f"/>
+                <circle cx="305" cy="72" r="5.5" fill="#fff"/>
+              </svg>
+            </div>
+            <p class="coords">-5.251568, 119.851791 &nbsp; <a>Hapus lokasi</a></p>
+          </div>
+          <button class="btn-accent" style="padding:9px 22px;font-size:14px;">Simpan momen</button>
+        </div>
+        <div class="app-footer">Album momen keluarga · tersimpan di Google Drive &amp; Sheets</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>Catatan:</strong> ini preview statis dengan ilustrasi pengganti foto. Di aplikasi aslinya, foto adalah foto keluargamu dari Google Drive, dan peta adalah OpenStreetMap sungguhan yang interaktif. Alur pemakaian: buka album → login sekali → jelajah linimasa/peta → tambah momen lewat form (nanti juga via bot Telegram di tahap 2).
+  </div>
+</div>
+</body>
+</html>

@@ -68,10 +68,10 @@ Profil anggota saat ini adalah identitas di dalam satu ruang keluarga yang memak
 ## Validasi
 
 ```bash
-npm run lint
-npx tsc --noEmit
-npm run build
+npm run check
 ```
+
+Menjalankan lint, typecheck, dan build secara berurutan. Masing-masing juga tersedia sebagai `npm run lint`, `npm run typecheck`, dan `npm run build`.
 
 ## Teknologi
 

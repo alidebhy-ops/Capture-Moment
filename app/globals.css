@@ -508,6 +508,10 @@ img, video { display: block; }
 .empty-search > svg, .state-card > svg { margin: 0 auto 10px; color: var(--accent); }
 .empty-search h3, .state-card h1 { margin: 0; font-family: var(--font-display), serif; font-size: 1.35rem; }
 .empty-search p, .state-card p { margin: 7px auto 16px; color: var(--ink-soft); font-size: 0.78rem; }
+.state-card p { max-width: 46ch; }
+.state-card-detail { font-family: var(--font-mono, ui-monospace), monospace; font-size: 0.68rem !important; color: var(--ink-faint) !important; }
+.state-card-page { display: flex; flex: 1; align-items: center; justify-content: center; padding: 48px 20px; }
+.state-card-page .state-card { max-width: 460px; }
 .empty-search button { border: 0; background: transparent; color: var(--accent-deep); font-size: 0.75rem; font-weight: 750; }
 
 /* Shared page headers */
@@ -654,6 +658,7 @@ img, video { display: block; }
 .upload-icon { display: grid; width: 50px; height: 50px; margin-bottom: 11px; place-items: center; border-radius: 15px; background: var(--accent-soft); color: var(--accent); }
 .upload-dropzone strong { font-size: 0.82rem; }
 .upload-dropzone p { margin: 5px 0 12px; color: var(--ink-faint); font-size: 0.63rem; }
+.upload-dropzone p.upload-hint { margin: -8px 0 12px; font-size: 0.58rem; }
 .upload-browse { padding: 7px 11px; border: 1px solid var(--line); border-radius: 9px; background: var(--field-bg); color: var(--accent-deep); font-size: 0.65rem; font-weight: 750; }
 .media-previews { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 12px; }
 .media-preview, .add-more-media { position: relative; aspect-ratio: 1; overflow: hidden; border-radius: 12px; background: var(--media-placeholder); }

@@ -1,8 +1,12 @@
-import { google } from "googleapis";
+// Deliberately the scoped packages rather than the umbrella "googleapis": that
+// one eagerly re-exports all 300+ Google APIs and produced a ~12 MB server
+// chunk that every cold start had to parse, for the sake of exactly two APIs.
+import { auth, drive } from "@googleapis/drive";
+import { sheets } from "@googleapis/sheets";
 
-type OAuthClient = InstanceType<typeof google.auth.OAuth2>;
-type DriveClient = ReturnType<typeof google.drive>;
-type SheetsClient = ReturnType<typeof google.sheets>;
+type OAuthClient = InstanceType<typeof auth.OAuth2>;
+type DriveClient = ReturnType<typeof drive>;
+type SheetsClient = ReturnType<typeof sheets>;
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -27,7 +31,7 @@ function oauthClient(): OAuthClient {
   const existing = globalThis.captureMomentOAuthClient;
   if (existing) return existing;
 
-  const client = new google.auth.OAuth2(
+  const client = new auth.OAuth2(
     requireEnv("GOOGLE_CLIENT_ID"),
     requireEnv("GOOGLE_CLIENT_SECRET")
   );
@@ -40,18 +44,18 @@ export function getDrive(): DriveClient {
   const existing = globalThis.captureMomentDrive;
   if (existing) return existing;
 
-  const drive = google.drive({ version: "v3", auth: oauthClient() });
-  globalThis.captureMomentDrive = drive;
-  return drive;
+  const client = drive({ version: "v3", auth: oauthClient() });
+  globalThis.captureMomentDrive = client;
+  return client;
 }
 
 export function getSheets(): SheetsClient {
   const existing = globalThis.captureMomentSheets;
   if (existing) return existing;
 
-  const sheets = google.sheets({ version: "v4", auth: oauthClient() });
-  globalThis.captureMomentSheets = sheets;
-  return sheets;
+  const client = sheets({ version: "v4", auth: oauthClient() });
+  globalThis.captureMomentSheets = client;
+  return client;
 }
 
 // Drive's thumbnailLink points at googleusercontent, which needs a bearer token

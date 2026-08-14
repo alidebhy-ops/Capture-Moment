@@ -70,7 +70,7 @@ self.addEventListener("fetch", (event) => {
   const isStaticAsset =
     url.pathname.startsWith("/_next/static/") ||
     url.pathname.startsWith("/demo/") ||
-    ["/favicon.ico", "/og.png", "/pwa-192.png", "/pwa-512.png"].includes(
+    ["/favicon.ico", "/og.jpg", "/pwa-192.png", "/pwa-512.png"].includes(
       url.pathname
     );
 

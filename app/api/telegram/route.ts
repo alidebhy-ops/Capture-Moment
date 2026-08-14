@@ -17,6 +17,7 @@ import {
   recallMediaGroup,
   rememberMediaGroup,
   sendMessage,
+  withMediaGroupLock,
   type TelegramMessage,
   type TelegramUpdate,
 } from "@/lib/telegram";
@@ -24,6 +25,10 @@ import type { MediaItem } from "@/lib/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+// Downloading up to 20MB from Telegram and pushing it to Drive can outlast the
+// default budget. A platform timeout would make Telegram retry the update and
+// save the same moment twice, which the always-200 reply below cannot prevent.
+export const maxDuration = 60;
 
 // A location arrives as its own message right after the photo. Anything older
 // than this is treated as a new thought rather than a late attachment.
@@ -102,38 +107,42 @@ async function handleMedia(message: TelegramMessage): Promise<string> {
   );
   if (!media) return "Media gagal disimpan ke Google Drive. Coba lagi sebentar lagi.";
 
-  // Photos sent as one album should land in one moment.
   const groupId = message.media_group_id;
-  const existingId = groupId ? recallMediaGroup(groupId) : null;
-  if (existingId) {
-    const existing = await appendMedia(existingId, media);
-    if (existing) return "";
-  }
 
-  const { title, story } = parseCaption(message.caption ?? "");
-  const moment = await addMoment({
-    title,
-    story,
-    date: todayISO(message.date),
-    lat: null,
-    lng: null,
-    locationName: "",
-    media: [media],
-    coverPhotoId: media.id,
-    collection: "Dari Telegram",
-    tags: [],
-    mood: "",
-    favorite: false,
-    authorId: "",
-    peopleIds: [],
-  });
+  // Photos sent as one album should land in one moment. The download and upload
+  // above run in parallel across the album; only this part is serialized, so
+  // the first photo creates the moment and the rest attach to it.
+  const save = async (): Promise<string> => {
+    const existingId = groupId ? recallMediaGroup(groupId) : null;
+    if (existingId && (await appendMedia(existingId, media))) return "";
 
-  if (groupId) rememberMediaGroup(groupId, moment.id);
+    const { title, story } = parseCaption(message.caption ?? "");
+    const moment = await addMoment({
+      title,
+      story,
+      date: todayISO(message.date),
+      lat: null,
+      lng: null,
+      locationName: "",
+      media: [media],
+      coverPhotoId: media.id,
+      collection: "Dari Telegram",
+      tags: [],
+      mood: "",
+      favorite: false,
+      authorId: "",
+      peopleIds: [],
+    });
 
-  return [
-    `Tersimpan: <b>${escapeHtml(moment.title)}</b>`,
-    "Kirim lokasi sekarang untuk menandai tempatnya di peta.",
-  ].join("\n");
+    if (groupId) rememberMediaGroup(groupId, moment.id);
+
+    return [
+      `Tersimpan: <b>${escapeHtml(moment.title)}</b>`,
+      "Kirim lokasi sekarang untuk menandai tempatnya di peta.",
+    ].join("\n");
+  };
+
+  return groupId ? withMediaGroupLock(groupId, save) : save();
 }
 
 async function appendMedia(

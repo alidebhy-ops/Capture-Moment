@@ -17,6 +17,7 @@ import {
   WandSparkles,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { MAX_UPLOAD_BYTES, oversizedMediaMessage } from "@/lib/upload-limits";
 
 type InboxItem = {
   id: string;
@@ -193,6 +194,11 @@ export default function SmartInbox() {
       upload = new File([compressed], file.name, {
         type: compressed.type || file.type,
       });
+    }
+    // The platform drops oversized bodies before the API route runs, so the
+    // size has to be caught here to say anything useful about it.
+    if (upload.size > MAX_UPLOAD_BYTES) {
+      throw new Error(oversizedMediaMessage(file.name, upload.size));
     }
     const body = new FormData();
     body.append("file", upload);

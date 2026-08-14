@@ -12,6 +12,8 @@ import type { Moment } from "@/lib/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+// Pulls five datasets and, on a cold start, sets up their tabs first.
+export const maxDuration = 60;
 
 function csvCell(value: unknown): string {
   let text =

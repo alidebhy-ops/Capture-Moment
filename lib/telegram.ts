@@ -156,13 +156,18 @@ function mimeFromPath(path: string): string {
 }
 
 // Telegram splits an album into one webhook call per photo, tied together only
-// by media_group_id. Remembering the moment we created for a group lets the rest
-// of the album join it instead of creating a moment per photo. A cold start
-// between calls just means an extra moment, never lost media.
+// by media_group_id, and delivers those calls concurrently. Recording the
+// moment id only after the upload finished meant every photo in an album still
+// saw an empty slot and created its own moment. Serializing the bookkeeping per
+// album fixes both that and the read-modify-write when photos are appended.
+//
+// The lock is per process, so a cold start mid-album still splits it — an extra
+// moment, never lost media.
 type MediaGroupEntry = { momentId: string; expiresAt: number };
 
 declare global {
   var captureMomentTelegramGroups: Map<string, MediaGroupEntry> | undefined;
+  var captureMomentTelegramLocks: Map<string, Promise<unknown>> | undefined;
 }
 
 const MEDIA_GROUP_TTL_MS = 5 * 60 * 1000;
@@ -174,13 +179,56 @@ function groupStore(): Map<string, MediaGroupEntry> {
   return globalThis.captureMomentTelegramGroups;
 }
 
-export function rememberMediaGroup(groupId: string, momentId: string): void {
+function lockStore(): Map<string, Promise<unknown>> {
+  if (!globalThis.captureMomentTelegramLocks) {
+    globalThis.captureMomentTelegramLocks = new Map();
+  }
+  return globalThis.captureMomentTelegramLocks;
+}
+
+function sweepExpiredGroups(now: number): void {
   const store = groupStore();
-  const now = Date.now();
   for (const [key, entry] of store) {
     if (entry.expiresAt <= now) store.delete(key);
   }
-  store.set(groupId, { momentId, expiresAt: now + MEDIA_GROUP_TTL_MS });
+}
+
+// Runs one album's bookkeeping at a time. Callers do the slow download and
+// upload outside this, then hand over only the part that must not interleave.
+export async function withMediaGroupLock<T>(
+  groupId: string,
+  task: () => Promise<T>
+): Promise<T> {
+  const locks = lockStore();
+  const previous = locks.get(groupId) ?? Promise.resolve();
+  const run = previous.then(task, task);
+
+  locks.set(
+    groupId,
+    run.then(
+      () => undefined,
+      () => undefined
+    )
+  );
+
+  try {
+    return await run;
+  } finally {
+    // Only the last waiter clears the slot, so a queue still forming is kept.
+    if (locks.get(groupId) === undefined) locks.delete(groupId);
+    setTimeout(() => {
+      if (lockStore().size > 200) lockStore().clear();
+    }, 0);
+  }
+}
+
+export function rememberMediaGroup(groupId: string, momentId: string): void {
+  const now = Date.now();
+  sweepExpiredGroups(now);
+  groupStore().set(groupId, {
+    momentId,
+    expiresAt: now + MEDIA_GROUP_TTL_MS,
+  });
 }
 
 export function recallMediaGroup(groupId: string): string | null {

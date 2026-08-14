@@ -360,16 +360,20 @@ export async function restoreMoment(id: string): Promise<Moment | null> {
   return updateMoment(id, { deletedAt: "" });
 }
 
-// Moments live in the first tab, which is addressed by range without a title,
-// so the row removal has to resolve that tab's id the same way.
-async function firstSheetId(): Promise<number> {
+// Moments are read through the unqualified range "A:S", which Google resolves
+// to the first *visible* sheet — not simply the sheet at index 0. Row removal
+// has to resolve the same tab, or a hidden leading tab would send the delete to
+// a different sheet than the one that was read.
+async function momentsSheetId(): Promise<number> {
   const result = await getSheets().spreadsheets.get({
     spreadsheetId: getSheetId(),
-    fields: "sheets.properties(sheetId,index)",
+    fields: "sheets.properties(sheetId,index,hidden)",
   });
-  const sheetId = result.data.sheets?.find(
-    (sheet) => sheet.properties?.index === 0
-  )?.properties?.sheetId;
+
+  const sheetId = (result.data.sheets ?? [])
+    .map((sheet) => sheet.properties)
+    .filter((properties) => properties && properties.hidden !== true)
+    .sort((a, b) => (a?.index ?? 0) - (b?.index ?? 0))[0]?.sheetId;
 
   if (sheetId === undefined || sheetId === null) {
     throw new Error("Tab momen tidak ditemukan di Google Sheets.");
@@ -377,16 +381,38 @@ async function firstSheetId(): Promise<number> {
   return sheetId;
 }
 
-async function deleteDriveMedia(moment: Moment): Promise<void> {
+async function deleteDriveMedia(
+  moment: Moment,
+  stillReferenced: Set<string>
+): Promise<void> {
   const drive = getDrive();
   await Promise.all(
     moment.media
-      .filter((item) => item.id && !item.src)
+      .filter(
+        (item) => item.id && !item.src && !stillReferenced.has(item.id)
+      )
       .map((item) =>
         // A file that is already gone should not block emptying the trash.
         drive.files.delete({ fileId: item.id }).catch(() => undefined)
       )
   );
+}
+
+// The same Drive file can legitimately appear in more than one moment, so only
+// media that nothing else points at may be destroyed.
+function mediaReferencedElsewhere(
+  rows: string[][],
+  excludeId: string
+): Set<string> {
+  const referenced = new Set<string>();
+  for (const row of rows) {
+    if (!row[0] || row[0] === "id" || row[0] === excludeId) continue;
+    for (const mediaId of (row[7] ?? "").split(",")) {
+      const trimmed = mediaId.trim();
+      if (trimmed) referenced.add(trimmed);
+    }
+  }
+  return referenced;
 }
 
 // Emptying the trash has to remove the Drive files too, otherwise the storage
@@ -411,6 +437,15 @@ export async function purgeMoment(id: string): Promise<Moment | null> {
   const rowIndex = rows.findIndex((row, index) => index > 0 && row[0] === id);
   if (rowIndex < 0) return null;
 
+  // Take the media list from the row we are about to delete rather than from
+  // the cached read, so a concurrent media edit cannot make us delete the
+  // wrong files.
+  const stored = rowToMoment(rows[rowIndex]) ?? current;
+
+  // Resolve the sheet id up front. Everything between the identity check and
+  // the delete widens the window in which another purge could shift the rows
+  // beneath us, so nothing slow belongs in between.
+  const sheetId = await momentsSheetId();
   const sheetRow = rowIndex + 1;
   if (!(await assertRowStillMatches(sheetRow, id))) {
     throw new Error(
@@ -418,7 +453,6 @@ export async function purgeMoment(id: string): Promise<Moment | null> {
     );
   }
 
-  await deleteDriveMedia(current);
   await getSheets().spreadsheets.batchUpdate({
     spreadsheetId: getSheetId(),
     requestBody: {
@@ -426,7 +460,7 @@ export async function purgeMoment(id: string): Promise<Moment | null> {
         {
           deleteDimension: {
             range: {
-              sheetId: await firstSheetId(),
+              sheetId,
               dimension: "ROWS",
               startIndex: rowIndex,
               endIndex: rowIndex + 1,
@@ -436,6 +470,11 @@ export async function purgeMoment(id: string): Promise<Moment | null> {
       ],
     },
   });
+
+  // Media is removed only after the row is gone. Failing here leaves unused
+  // files in Drive, which merely wastes quota; the reverse order would leave a
+  // restorable moment whose photos had already been destroyed.
+  await deleteDriveMedia(stored, mediaReferencedElsewhere(rows, id));
 
   return current;
 }

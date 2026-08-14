@@ -3,6 +3,7 @@ import { Readable } from "node:stream";
 import { getDrive, getDriveFolderId } from "@/lib/google";
 import { isDemoMode } from "@/lib/demo";
 import { saveDemoUpload } from "@/lib/demo-uploads";
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from "@/lib/upload-limits";
 
 export const runtime = "nodejs";
 
@@ -61,6 +62,10 @@ function signatureMatches(buffer: Buffer, mimeType: string): boolean {
 }
 
 export async function POST(request: NextRequest) {
+  // Vercel rejects request bodies over 4.5 MB at the edge, before the function
+  // even runs, so anything above that can never reach this handler. Keeping our
+  // own limit just under it means the user gets a real explanation instead of
+  // an opaque platform error.
   let file: File | null = null;
   try {
     const form = await request.formData();
@@ -82,10 +87,11 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
   }
-  const maxBytes = isVideo ? 100 * 1024 * 1024 : 12 * 1024 * 1024;
-  if (file.size > maxBytes) {
+  if (file.size > MAX_UPLOAD_BYTES) {
     return NextResponse.json(
-      { error: isVideo ? "Video maksimal 100 MB" : "Foto maksimal 12 MB" },
+      {
+        error: `Ukuran media maksimal ${MAX_UPLOAD_MB} MB karena melewati server aplikasi. Untuk video yang lebih besar, unggah langsung ke folder Google Drive album.`,
+      },
       { status: 400 }
     );
   }

@@ -3,7 +3,7 @@ import { ArrowLeft, BookOpen, CalendarDays, MapPin } from "lucide-react";
 import PrintButton from "@/components/PrintButton";
 import { formatDateID } from "@/lib/format";
 import { coverSrc } from "@/lib/media";
-import { listMoments } from "@/lib/moments";
+import { listMoments, type Moment } from "@/lib/moments";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +20,9 @@ export default async function PhotoBookPage({
   searchParams: Promise<{ year?: string }>;
 }) {
   const { year } = await searchParams;
-  const allMoments = await listMoments();
+  // Every sibling page degrades to an empty state when Sheets is unreachable;
+  // without this the photobook was the one route that threw instead.
+  const allMoments = await listMoments().catch(() => [] as Moment[]);
   const years = [...new Set(allMoments.map((moment) => moment.date.slice(0, 4)).filter(Boolean))]
     .sort()
     .reverse();

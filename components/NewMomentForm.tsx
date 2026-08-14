@@ -23,6 +23,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import type { FamilyMember } from "@/lib/family-types";
 import { mediaSrc } from "@/lib/media";
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB, oversizedMediaMessage } from "@/lib/upload-limits";
 import type { Moment, Plan } from "@/lib/types";
 import LocationPickerLazy from "./LocationPickerLazy";
 
@@ -442,6 +443,12 @@ export default function NewMomentForm({
           });
           uploadFile = new File([compressed], original.name, { type: compressed.type || original.type });
         }
+        // Checked here rather than only on the server: the platform rejects an
+        // oversized body before our handler runs, so the API's own message
+        // would never reach the user.
+        if (uploadFile.size > MAX_UPLOAD_BYTES) {
+          throw new Error(oversizedMediaMessage(original.name, uploadFile.size));
+        }
         const formData = new FormData();
         formData.append("file", uploadFile);
         const response = await fetch("/api/upload", { method: "POST", body: formData });
@@ -591,6 +598,7 @@ export default function NewMomentForm({
             <span className="upload-icon"><UploadCloud size={27} /></span>
             <strong>Pilih foto atau video</strong>
             <p>JPG, PNG, HEIC, MP4, atau MOV · maksimal 12 media</p>
+            <p className="upload-hint">Foto dikompres otomatis. Video maksimal {MAX_UPLOAD_MB} MB.</p>
             <span className="upload-browse">Telusuri media</span>
           </button>
           {previews.length > 0 && (

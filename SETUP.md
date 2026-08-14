@@ -118,8 +118,8 @@ Batasan: bot Telegram hanya dapat mengunduh berkas hingga 20MB. Video lebih besa
 
 ## Catatan & batasan
 
-- **Kuota gratis**: penyimpanan mengikuti kuota akun Google kamu (dipakai bersama Gmail/Drive). Foto dikompres otomatis di browser (~maks 1,4MB per foto), sedangkan video dibatasi maksimal 100MB per file.
-- **Batas hosting serverless**: alur upload saat ini melewati server aplikasi. Beberapa platform serverless, termasuk Vercel Functions, memiliki batas request yang jauh di bawah 100MB. Untuk video besar, gunakan hosting Node dengan batas upload yang sesuai atau lanjutkan arsitektur ke direct/resumable upload Google Drive.
+- **Kuota gratis**: penyimpanan mengikuti kuota akun Google kamu (dipakai bersama Gmail/Drive). Foto dikompres otomatis di browser (~maks 1,4MB per foto) sehingga hampir selalu lolos.
+- **Batas ukuran unggahan 4 MB per berkas**: Vercel menolak body request di atas 4,5MB sebelum kode aplikasi sempat berjalan, dan seluruh unggahan saat ini melewati server aplikasi. Foto aman karena dikompres dulu; video yang lebih besar akan ditolak dengan pesan yang jelas. Untuk video besar, unggah langsung ke folder Google Drive album, atau lanjutkan arsitektur ke resumable upload langsung dari browser ke Drive.
 - **Refresh token kedaluwarsa tiap 7 hari** selama OAuth consent screen berstatus **Testing**. Solusi: di halaman OAuth consent screen, klik **Publish app** (status "In production"). Tidak perlu proses verifikasi Google untuk scope yang dipakai app ini — cukup abaikan peringatannya. Setelah itu refresh token berlaku permanen (sampai dicabut manual).
 - **Foto HEIC dari iPhone** kadang gagal dikompres di browser tertentu. Kalau bermasalah, ubah setelan kamera iPhone ke "Most Compatible" (JPEG).
 - **Keamanan**: `.env.local` tidak boleh di-commit (sudah otomatis di-ignore oleh git).

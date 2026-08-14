@@ -1,4 +1,4 @@
-import { google } from "googleapis";
+import { auth } from "@googleapis/drive";
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
@@ -34,7 +34,7 @@ if (!clientId || !clientSecret) {
   process.exit(1);
 }
 
-const oauth2 = new google.auth.OAuth2(clientId, clientSecret, REDIRECT_URI);
+const oauth2 = new auth.OAuth2(clientId, clientSecret, REDIRECT_URI);
 
 const authUrl = oauth2.generateAuthUrl({
   access_type: "offline",

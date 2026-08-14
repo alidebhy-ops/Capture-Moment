@@ -5,11 +5,83 @@ import { getDemoUpload } from "@/lib/demo-uploads";
 import { isDemoMode } from "@/lib/demo";
 
 export const runtime = "nodejs";
+// Video is streamed through this route, so the function stays open for as long
+// as the viewer is watching.
+export const maxDuration = 60;
 
 // Drive file ids are content-addressed: the bytes behind an id never change, so
 // the browser may keep them forever. "private" keeps family media out of shared
 // caches while still ending the re-download on every navigation.
 const IMMUTABLE_MEDIA_CACHE = "private, max-age=31536000, immutable";
+
+// Drive builds thumbnails asynchronously, so a photo uploaded moments ago has
+// none yet and we serve the original instead. Caching that for a year at the
+// thumbnail URL would permanently defeat the optimization for the newest
+// photos, which are exactly the ones people look at most.
+const PENDING_THUMBNAIL_CACHE = "private, max-age=300";
+
+const MAX_FOLDER_DEPTH = 6;
+
+// The googleapis types still describe response headers as a plain object, but
+// gaxios 7 hands back a Headers instance at runtime. Reading one as the other
+// silently yields undefined — which is how a 206 without Content-Range shipped
+// and broke video playback. Handle both shapes rather than trusting either.
+function readHeader(headers: unknown, name: string): string | null {
+  if (!headers || typeof headers !== "object") return null;
+
+  const getter = (headers as Headers).get;
+  if (typeof getter === "function") {
+    return (headers as Headers).get(name);
+  }
+
+  const value = (headers as Record<string, string | string[] | undefined>)[name];
+  if (Array.isArray(value)) return value[0] ?? null;
+  return typeof value === "string" ? value : null;
+}
+
+declare global {
+  var captureMomentAlbumFolders: Set<string> | undefined;
+}
+
+function albumFolderCache(): Set<string> {
+  if (!globalThis.captureMomentAlbumFolders) {
+    globalThis.captureMomentAlbumFolders = new Set([getDriveFolderId()]);
+  }
+  return globalThis.captureMomentAlbumFolders;
+}
+
+// The drive.file scope already limits us to files this app created, but that
+// still spans every upload ever made, so a stray id should not resolve. Walking
+// the parent chain — rather than demanding an exact parent — means the album
+// keeps working after someone tidies Drive into per-year subfolders. Visited
+// folders are remembered, so this costs nothing after the first hit.
+async function isInsideAlbumFolder(
+  parents: string[] | null | undefined
+): Promise<boolean> {
+  const known = albumFolderCache();
+  const drive = getDrive();
+  let frontier = parents ?? [];
+  const visited: string[] = [];
+
+  for (let depth = 0; depth < MAX_FOLDER_DEPTH && frontier.length; depth++) {
+    if (frontier.some((parent) => known.has(parent))) {
+      visited.forEach((folder) => known.add(folder));
+      return true;
+    }
+    visited.push(...frontier);
+
+    const next: string[] = [];
+    for (const parent of frontier) {
+      const folder = await drive.files
+        .get({ fileId: parent, fields: "parents" })
+        .catch(() => null);
+      next.push(...(folder?.data.parents ?? []));
+    }
+    frontier = next;
+  }
+
+  return false;
+}
 
 const THUMBNAIL_WIDTHS = [200, 400, 800] as const;
 
@@ -82,11 +154,7 @@ export async function GET(
       fields: "mimeType,size,parents,thumbnailLink,trashed",
     });
 
-    // The app's OAuth scope is drive.file, so it can only reach files this app
-    // created — but that still spans every upload ever made. Requiring the file
-    // to live in the configured folder keeps an arbitrary id from being probed.
-    const parents = meta.data.parents ?? [];
-    if (meta.data.trashed || !parents.includes(getDriveFolderId())) {
+    if (meta.data.trashed || !(await isInsideAlbumFolder(meta.data.parents))) {
       return NextResponse.json(
         { error: "Foto tidak ditemukan" },
         { status: 404 }
@@ -96,7 +164,8 @@ export async function GET(
     const mimeType = meta.data.mimeType ?? "image/jpeg";
     const width = requestedThumbnailWidth(request);
 
-    if (width && meta.data.thumbnailLink && mimeType.startsWith("image/")) {
+    const wantsThumbnail = Boolean(width) && mimeType.startsWith("image/");
+    if (wantsThumbnail && width && meta.data.thumbnailLink) {
       const thumbnail = await fetchThumbnail(meta.data.thumbnailLink, width);
       if (thumbnail) return thumbnail;
       // Fall through to the original when the thumbnail is unavailable.
@@ -111,20 +180,23 @@ export async function GET(
       }
     );
 
-    const contentRange = media.headers["content-range"];
-    const contentLength = media.headers["content-length"];
+    const contentRange = readHeader(media.headers, "content-range");
+    const contentLength = readHeader(media.headers, "content-length");
+    const isPartial = media.status === 206 && contentRange !== null;
     const body = Readable.toWeb(
       media.data as unknown as Readable
     ) as ReadableStream<Uint8Array>;
 
     return new NextResponse(body, {
-      status: media.status === 206 || contentRange ? 206 : 200,
+      status: isPartial ? 206 : 200,
       headers: {
         "Content-Type": mimeType,
-        ...(contentLength ? { "Content-Length": String(contentLength) } : {}),
+        ...(contentLength ? { "Content-Length": contentLength } : {}),
         "Accept-Ranges": "bytes",
-        ...(contentRange ? { "Content-Range": String(contentRange) } : {}),
-        "Cache-Control": IMMUTABLE_MEDIA_CACHE,
+        ...(isPartial && contentRange ? { "Content-Range": contentRange } : {}),
+        "Cache-Control": wantsThumbnail
+          ? PENDING_THUMBNAIL_CACHE
+          : IMMUTABLE_MEDIA_CACHE,
         "X-Content-Type-Options": "nosniff",
       },
     });
@@ -140,9 +212,15 @@ async function fetchThumbnail(
   const token = await getAccessToken();
   if (!token) return null;
 
-  // Drive returns a link ending in a size hint such as "=s220"; swapping it
-  // asks googleusercontent for the width we actually render at.
-  const sized = thumbnailLink.replace(/=s\d+(-c)?$/, `=s${width}`);
+  // Drive has shipped the size hint in two shapes over the years: a trailing
+  // "=s220" on googleusercontent links, and an "&sz=s220" query on the older
+  // docs.google.com form. If neither is present we still serve what Drive gave
+  // us, but only cache it briefly, since it is not the size that was asked for.
+  const sized = thumbnailLink
+    .replace(/=s\d+(-c)?$/, `=s${width}`)
+    .replace(/([?&]sz=)s?\d+/, `$1s${width}`);
+  const resized = sized !== thumbnailLink;
+
   const response = await fetch(sized, {
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -152,7 +230,9 @@ async function fetchThumbnail(
     status: 200,
     headers: {
       "Content-Type": response.headers.get("content-type") ?? "image/jpeg",
-      "Cache-Control": IMMUTABLE_MEDIA_CACHE,
+      "Cache-Control": resized
+        ? IMMUTABLE_MEDIA_CACHE
+        : PENDING_THUMBNAIL_CACHE,
       "X-Content-Type-Options": "nosniff",
     },
   });

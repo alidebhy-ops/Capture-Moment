@@ -37,6 +37,16 @@ export async function generateMetadata(): Promise<Metadata> {
     title: { default: "CaptureMoment — Ruang Kenangan Keluarga", template: "%s · CaptureMoment" },
     description: "Simpan foto, video, cerita, lokasi, serta rencana keluarga dalam satu ruang kenangan yang hangat.",
     applicationName: "CaptureMoment",
+    // A private family album behind a shared password has no business in search
+    // results: the login page is publicly reachable and the deploy URL is
+    // guessable, so being indexed is the difference between "unlisted" and
+    // "findable by anyone".
+    robots: {
+      index: false,
+      follow: false,
+      nocache: true,
+      googleBot: { index: false, follow: false },
+    },
     icons: {
       icon: [
         { url: "/favicon.ico" },
@@ -54,13 +64,13 @@ export async function generateMetadata(): Promise<Metadata> {
       description: "Foto, video, tempat, cerita, wishlist, dan rencana dalam satu ruang keluarga.",
       type: "website",
       locale: "id_ID",
-      images: [{ url: "/og.png", width: 1739, height: 909, alt: "CaptureMoment — Cerita keluarga, tersimpan selamanya" }],
+      images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "CaptureMoment — Cerita keluarga, tersimpan selamanya" }],
     },
     twitter: {
       card: "summary_large_image",
       title: "CaptureMoment",
       description: "Ruang kenangan keluarga yang hidup.",
-      images: ["/og.png"],
+      images: ["/og.jpg"],
     },
   };
 }

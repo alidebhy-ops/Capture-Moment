@@ -103,7 +103,11 @@ export default function MomentExplorer({ moments, initialCollection = "Semua" }:
   const [listView, setListView] = useState(false);
   // Favorites toggled from the grid are held here until the server confirms, so
   // the card reflects the click immediately and rolls back if the save fails.
-  const [favoriteOverrides, setFavoriteOverrides] = useState<Record<string, boolean>>({});
+  // basedOn records what the server said at the time, which is how the override
+  // knows when it has been superseded.
+  const [favoriteOverrides, setFavoriteOverrides] = useState<
+    Record<string, { value: boolean; basedOn: boolean }>
+  >({});
   const [pendingFavorite, setPendingFavorite] = useState<string | null>(null);
 
   const collections = useMemo(
@@ -111,15 +115,27 @@ export default function MomentExplorer({ moments, initialCollection = "Semua" }:
     [moments]
   );
 
+  // Derived rather than synced: an override applies only while the server still
+  // reports the value it was based on. The moment fresh props disagree with
+  // that baseline the server has spoken — either confirming this toggle or
+  // carrying a change from another device — and the override steps aside.
   const isFavorite = useCallback(
-    (moment: Moment) => favoriteOverrides[moment.id] ?? moment.favorite,
+    (moment: Moment) => {
+      const override = favoriteOverrides[moment.id];
+      if (!override) return moment.favorite;
+      if (moment.favorite !== override.basedOn) return moment.favorite;
+      return override.value;
+    },
     [favoriteOverrides]
   );
 
   const toggleFavorite = useCallback(
     async (moment: Moment, next: boolean) => {
       setPendingFavorite(moment.id);
-      setFavoriteOverrides((current) => ({ ...current, [moment.id]: next }));
+      setFavoriteOverrides((current) => ({
+        ...current,
+        [moment.id]: { value: next, basedOn: moment.favorite },
+      }));
       try {
         const response = await fetch(`/api/moments/${moment.id}`, {
           method: "PATCH",
@@ -130,6 +146,8 @@ export default function MomentExplorer({ moments, initialCollection = "Semua" }:
           const payload = (await response.json().catch(() => null)) as { error?: string } | null;
           throw new Error(payload?.error || "Favorit belum dapat disimpan.");
         }
+        // The override stays until the refreshed props catch up; clearing it
+        // here would flash the old value for as long as the refresh takes.
         router.refresh();
       } catch (error) {
         setFavoriteOverrides((current) => {
@@ -139,7 +157,7 @@ export default function MomentExplorer({ moments, initialCollection = "Semua" }:
         });
         window.alert(error instanceof Error ? error.message : "Favorit belum dapat disimpan.");
       } finally {
-        setPendingFavorite(null);
+        setPendingFavorite((current) => (current === moment.id ? null : current));
       }
     },
     [router]
@@ -152,17 +170,18 @@ export default function MomentExplorer({ moments, initialCollection = "Semua" }:
   const filtered = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase("id");
     return moments.filter((moment) => {
-      const favorite = favoriteOverrides[moment.id] ?? moment.favorite;
       const sameCollection =
         collection === "Semua" ||
-        (collection === "Favorit" ? favorite : moment.collection === collection);
+        (collection === "Favorit"
+          ? isFavorite(moment)
+          : moment.collection === collection);
       const matchesTag = !activeTag || moment.tags.includes(activeTag);
       const haystack = [moment.title, moment.story, moment.locationName, ...moment.tags]
         .join(" ")
         .toLocaleLowerCase("id");
       return sameCollection && matchesTag && (!needle || haystack.includes(needle));
     });
-  }, [activeTag, collection, favoriteOverrides, moments, query]);
+  }, [activeTag, collection, isFavorite, moments, query]);
 
   return (
     <section className="explorer-section" aria-labelledby="all-memories-heading">

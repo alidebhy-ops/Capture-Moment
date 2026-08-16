@@ -98,6 +98,9 @@ export default async function RootLayout({
     <html
       lang="id"
       className={`${sans.variable} ${display.variable}`}
+      // Opts into smooth in-page scrolling while telling Next to keep route
+      // changes instant, so moving between pages does not animate the scroll.
+      data-scroll-behavior="smooth"
       data-theme={initialMode}
       data-accent={initialAccent}
     >

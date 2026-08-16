@@ -19,6 +19,11 @@ CaptureMoment adalah ruang kenangan keluarga: foto, video, cerita, orang, tempat
 - **Bot Telegram** — kirim foto, caption, dan lokasi ke bot; momen langsung masuk album.
 - **Tema personal** — mode terang, gelap, otomatis mengikuti perangkat, serta lima pilihan warna aksen yang tersimpan.
 
+## Dokumentasi
+
+- [TUTORIAL.md](./TUTORIAL.md) — panduan lengkap dari nol, termasuk rincian biaya dan persiapan. Mulai dari sini kalau baru pertama kali.
+- [SETUP.md](./SETUP.md) — langkah teknis yang ringkas, untuk yang sudah terbiasa.
+
 ## Mulai
 
 1. Jalankan `npm install`.

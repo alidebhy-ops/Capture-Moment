@@ -1,3 +1,4 @@
+import { describeGoogleError } from "@/lib/google-errors";
 import { NextRequest, NextResponse } from "next/server";
 import {
   deleteFamilyMember,
@@ -24,7 +25,7 @@ const MUTABLE_FIELDS = [
 type MemberRouteContext = { params: Promise<{ id: string }> };
 
 function message(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
+  return error instanceof Error ? describeGoogleError(error) : fallback;
 }
 
 async function routeId(context: MemberRouteContext): Promise<string | null> {

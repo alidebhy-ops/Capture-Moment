@@ -1,3 +1,4 @@
+import { describeGoogleError } from "@/lib/google-errors";
 import { NextRequest, NextResponse } from "next/server";
 import {
   addFamilyMember,
@@ -10,7 +11,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 function message(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
+  return error instanceof Error ? describeGoogleError(error) : fallback;
 }
 
 export async function GET() {

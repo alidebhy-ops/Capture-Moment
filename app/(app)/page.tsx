@@ -1,3 +1,4 @@
+import { describeGoogleError } from "@/lib/google-errors";
 import Link from "next/link";
 import {
   Archive,
@@ -37,7 +38,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       listPlans().catch(() => []),
     ]);
   } catch (cause) {
-    error = cause instanceof Error ? cause.message : "Momen belum dapat dimuat";
+    error = describeGoogleError(cause);
   }
 
   if (error) {

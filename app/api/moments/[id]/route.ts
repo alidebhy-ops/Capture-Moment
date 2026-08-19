@@ -1,3 +1,4 @@
+import { describeGoogleError } from "@/lib/google-errors";
 import { NextRequest, NextResponse } from "next/server";
 import {
   getMoment,
@@ -224,7 +225,7 @@ export async function GET(_request: NextRequest, { params }: RouteContext) {
     return NextResponse.json(
       {
         error:
-          error instanceof Error ? error.message : "Gagal membaca momen",
+          describeGoogleError(error),
       },
       { status: 500 }
     );
@@ -267,7 +268,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     return NextResponse.json(
       {
         error:
-          error instanceof Error ? error.message : "Gagal memperbarui momen",
+          describeGoogleError(error),
       },
       { status: 500 }
     );
@@ -299,7 +300,7 @@ export async function DELETE(
     return NextResponse.json(
       {
         error:
-          error instanceof Error ? error.message : "Gagal menghapus momen",
+          describeGoogleError(error),
       },
       { status: 500 }
     );

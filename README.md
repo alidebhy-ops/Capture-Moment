@@ -78,6 +78,12 @@ npm run check
 
 Menjalankan lint, typecheck, dan build secara berurutan. Masing-masing juga tersedia sebagai `npm run lint`, `npm run typecheck`, dan `npm run build`.
 
+Untuk memeriksa sambungan ke Google (isi `.env.local`, token, spreadsheet, folder Drive):
+
+```bash
+npm run doctor
+```
+
 ## Teknologi
 
 Next.js 16 (App Router), React 19, TypeScript, Google Drive & Sheets API, Leaflet, EXIF, browser image compression, dan Progressive Web App.

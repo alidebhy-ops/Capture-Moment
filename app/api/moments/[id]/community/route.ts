@@ -1,3 +1,4 @@
+import { describeGoogleError } from "@/lib/google-errors";
 import { NextRequest, NextResponse } from "next/server";
 import {
   addCommunityComment,
@@ -18,7 +19,7 @@ export const dynamic = "force-dynamic";
 type CommunityRouteContext = { params: Promise<{ id: string }> };
 
 function message(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
+  return error instanceof Error ? describeGoogleError(error) : fallback;
 }
 
 async function momentId(

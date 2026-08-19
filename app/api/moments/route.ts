@@ -1,3 +1,4 @@
+import { describeGoogleError } from "@/lib/google-errors";
 import { NextRequest, NextResponse } from "next/server";
 import { addMoment, listMoments } from "@/lib/moments";
 
@@ -24,7 +25,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ moments });
   } catch (e) {
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "Gagal membaca data" },
+      { error: describeGoogleError(e) },
       { status: 500 }
     );
   }
@@ -140,7 +141,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ moment });
   } catch (e) {
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "Gagal menyimpan momen" },
+      { error: describeGoogleError(e) },
       { status: 500 }
     );
   }

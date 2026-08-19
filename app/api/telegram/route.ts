@@ -1,5 +1,6 @@
 import { Readable } from "node:stream";
 import { NextRequest, NextResponse } from "next/server";
+import { describeGoogleError } from "@/lib/google-errors";
 import { getDrive, getDriveFolderId } from "@/lib/google";
 import { isDemoMode } from "@/lib/demo";
 import { saveDemoUpload } from "@/lib/demo-uploads";
@@ -236,7 +237,7 @@ export async function POST(request: NextRequest) {
     await sendMessage(
       chatId,
       `Gagal menyimpan momen: ${escapeHtml(
-        error instanceof Error ? error.message : "kesalahan tidak dikenal"
+        describeGoogleError(error)
       )}`
     ).catch(() => undefined);
   }

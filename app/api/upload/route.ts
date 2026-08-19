@@ -1,3 +1,4 @@
+import { describeGoogleError } from "@/lib/google-errors";
 import { NextRequest, NextResponse } from "next/server";
 import { Readable } from "node:stream";
 import { getDrive, getDriveFolderId } from "@/lib/google";
@@ -131,7 +132,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (e) {
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : "Gagal upload ke Drive" },
+      { error: describeGoogleError(e) },
       { status: 500 }
     );
   }

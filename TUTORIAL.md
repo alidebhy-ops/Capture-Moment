@@ -105,6 +105,8 @@ Bagian ini yang paling banyak klik-nya, tapi hanya sekali seumur hidup project.
 2. Cari `Google Drive API` → klik hasilnya → **Enable**.
 3. Kembali ke Library, cari `Google Sheets API` → klik → **Enable**.
 
+> **Keduanya wajib.** Melewatkan salah satu adalah penyebab error tersering: foto bisa terunggah tapi momen gagal disimpan, atau sebaliknya. Setelah di-Enable, tunggu 1–2 menit agar perubahannya menyebar ke server Google.
+
 ### 3.3 Atur OAuth consent screen
 
 Ini layar izin yang muncul saat kamu menghubungkan akun.
@@ -203,6 +205,16 @@ DEMO_MODE=false
 
 ## Bagian 4 — Coba dulu di komputer sendiri
 
+Sebelum menjalankan aplikasinya, periksa dulu semua sambungan ke Google:
+
+```bash
+npm run doctor
+```
+
+Perintah ini menguji satu per satu: isi `.env.local`, izin akun Google, spreadsheet, dan folder Drive. Kalau ada yang salah, ia menyebut persis apa yang perlu diperbaiki. Jalankan ulang sampai semuanya `OK`.
+
+Setelah itu:
+
 ```bash
 npm run dev
 ```
@@ -300,8 +312,12 @@ Hampir tidak ada. Beberapa hal yang mungkin muncul seiring waktu:
 
 ## Kalau ada yang tidak beres
 
+Jalankan `npm run doctor` lebih dulu — sebagian besar masalah di bawah ini langsung ditunjuk olehnya.
+
 | Gejala | Penyebab tersering |
 |---|---|
+| `invalid_grant` | Refresh token salah salin (nama variabel tertulis dua kali) atau kedaluwarsa karena OAuth consent screen masih "Testing" |
+| Momen gagal disimpan padahal foto terunggah | Google Sheets API belum di-Enable |
 | "GOOGLE_CLIENT_ID belum diisi" | Ada variabel yang belum diisi di Vercel, atau namanya salah ketik |
 | Album kosong padahal sudah menambah momen | `SHEET_ID` menunjuk spreadsheet yang berbeda |
 | Foto tidak muncul, hanya kotak kosong | `DRIVE_FOLDER_ID` salah, atau foto dipindah keluar dari folder itu |

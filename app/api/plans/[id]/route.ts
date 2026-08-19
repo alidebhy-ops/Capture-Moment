@@ -1,3 +1,4 @@
+import { describeGoogleError } from "@/lib/google-errors";
 import { NextRequest, NextResponse } from "next/server";
 import {
   deletePlan,
@@ -34,7 +35,7 @@ function validId(id: string): boolean {
 }
 
 function errorMessage(error: unknown, fallback: string): string {
-  return error instanceof Error ? error.message : fallback;
+  return error instanceof Error ? describeGoogleError(error) : fallback;
 }
 
 async function routeId(context: RouteContext): Promise<string | null> {

@@ -17,6 +17,8 @@ Yang dibutuhkan: 1 akun Google (gratis, tanpa kartu kredit).
 1. Buka **APIs & Services → Library**, cari dan **Enable**:
    - **Google Drive API**
    - **Google Sheets API**
+
+   Keduanya wajib; melewatkan salah satu membuat penyimpanan momen gagal dengan pesan yang membingungkan. Tunggu 1-2 menit setelah Enable agar menyebar.
 2. Buka **APIs & Services → OAuth consent screen**:
    - Pilih audience **External** → isi nama app `CaptureMoment` + email kamu → simpan.
    - Di bagian **Test users**, tambahkan alamat Gmail kamu sendiri.
@@ -75,7 +77,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 npm run dev
 ```
 
-Buka http://localhost:3000 → login dengan `APP_PASSWORD` → tambah momen pertama. Cek: baris baru muncul di spreadsheet, foto muncul di folder Drive.
+Periksa dulu sambungannya dengan `npm run doctor`, lalu buka http://localhost:3000 → login dengan `APP_PASSWORD` → tambah momen pertama. Cek: baris baru muncul di spreadsheet, foto muncul di folder Drive.
 
 ## Langkah 7 — Deploy ke Vercel
 

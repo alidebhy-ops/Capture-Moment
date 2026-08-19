@@ -51,10 +51,13 @@ function albumFolderCache(): Set<string> {
 }
 
 // The drive.file scope already limits us to files this app created, but that
-// still spans every upload ever made, so a stray id should not resolve. Walking
-// the parent chain — rather than demanding an exact parent — means the album
-// keeps working after someone tidies Drive into per-year subfolders. Visited
-// folders are remembered, so this costs nothing after the first hit.
+// still spans every upload ever made, so a stray id should not resolve.
+//
+// Media sitting directly in the album folder is confirmed without any API call.
+// Anything deeper is walked upwards, which succeeds only for subfolders the app
+// itself created: drive.file cannot read a folder someone made by hand in the
+// Drive UI, so hand-built subfolders will not resolve. Visited folders are
+// remembered, so a successful walk costs nothing the next time.
 async function isInsideAlbumFolder(
   parents: string[] | null | undefined
 ): Promise<boolean> {

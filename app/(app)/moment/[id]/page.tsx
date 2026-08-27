@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element -- Related covers can be authenticated Drive streams. */
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -15,19 +16,21 @@ import MediaGallery from "@/components/MediaGallery";
 import MomentActions from "@/components/MomentActions";
 import MomentsMapLazy from "@/components/MomentsMapLazy";
 import { getMomentCommunity } from "@/lib/community";
-import { listFamilyMembers } from "@/lib/family";
+import { listPartners } from "@/lib/partners";
 import { formatDateID } from "@/lib/format";
 import { coverThumbSrc } from "@/lib/media";
 import { getMoment, listMoments } from "@/lib/moments";
+import { IDENTITY_COOKIE, readIdentityFromCookie } from "@/lib/identity";
 
 export const dynamic = "force-dynamic";
 
 export default async function MomentDetailPage({ params }: PageProps<"/moment/[id]">) {
   const { id } = await params;
+  const identityCookie = (await cookies()).get(IDENTITY_COOKIE)?.value;
   const [moment, allMoments, members, community] = await Promise.all([
     getMoment(id).catch(() => null),
     listMoments().catch(() => []),
-    listFamilyMembers().catch(() => []),
+    listPartners().catch(() => []),
     getMomentCommunity(id).catch(() => ({ comments: [], reactions: [] })),
   ]);
   if (!moment) notFound();
@@ -36,6 +39,8 @@ export default async function MomentDetailPage({ params }: PageProps<"/moment/[i
     .filter((item) => item.id !== moment.id && (item.collection === moment.collection || item.tags.some((tag) => moment.tags.includes(tag))))
     .slice(0, 2);
   const hasLocation = moment.lat !== null && moment.lng !== null;
+  const identity =
+    readIdentityFromCookie(identityCookie, members.map((member) => member.id)) ?? "";
   const author =
     members.find((member) => member.id === moment.authorId) || members[0];
   const people = members.filter(
@@ -125,6 +130,7 @@ export default async function MomentDetailPage({ params }: PageProps<"/moment/[i
           momentId={moment.id}
           initialCommunity={community}
           members={members}
+          initialIdentity={identity}
         />
       </section>
 

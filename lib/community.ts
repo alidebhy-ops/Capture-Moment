@@ -2,7 +2,7 @@ import { cache } from "react";
 import {
   demoCommunityComments,
   demoCommunityReactions,
-} from "./demo-family";
+} from "./demo-partners";
 import { isDemoMode } from "./demo";
 import { ensureTabOnce } from "./sheet-setup";
 import {
@@ -11,7 +11,7 @@ import {
   type CommunityReaction,
   type CommunityReactionKind,
   type MomentCommunity,
-} from "./family-types";
+} from "./partner-types";
 import { getSheetId, getSheets } from "./google";
 
 export type {
@@ -19,7 +19,7 @@ export type {
   CommunityReaction,
   CommunityReactionKind,
   MomentCommunity,
-} from "./family-types";
+} from "./partner-types";
 
 const SHEET_TITLE = "Community";
 const RANGE = `${SHEET_TITLE}!A:I`;

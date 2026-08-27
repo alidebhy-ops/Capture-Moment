@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 // Drive file ids are content-addressed: the bytes behind an id never change, so
-// the browser may keep them forever. "private" keeps family media out of shared
+// the browser may keep them forever. "private" keeps private media out of shared
 // caches while still ending the re-download on every navigation.
 const IMMUTABLE_MEDIA_CACHE = "private, max-age=31536000, immutable";
 
@@ -145,7 +145,7 @@ export async function GET(
   if (demoUpload) return demoResponse(demoUpload, request);
 
   // Without this, a demo deployment that still holds Google credentials would
-  // hand real family media to visitors who signed in without a password.
+  // hand real media to visitors who signed in without a password.
   if (isDemoMode()) {
     return NextResponse.json({ error: "Foto tidak ditemukan" }, { status: 404 });
   }

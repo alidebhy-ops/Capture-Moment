@@ -1,12 +1,12 @@
 import { describeGoogleError } from "@/lib/google-errors";
 import { NextRequest, NextResponse } from "next/server";
 import {
-  deleteFamilyMember,
-  FamilyValidationError,
-  getFamilyMember,
-  updateFamilyMember,
-  validateFamilyMemberDraft,
-} from "@/lib/family";
+  deletePartner,
+  PartnerValidationError,
+  getPartner,
+  updatePartner,
+  validatePartnerDraft,
+} from "@/lib/partners";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -44,7 +44,7 @@ export async function GET(
     );
   }
   try {
-    const member = await getFamilyMember(id);
+    const member = await getPartner(id);
     if (!member) {
       return NextResponse.json(
         { error: "Anggota tidak ditemukan." },
@@ -100,7 +100,7 @@ export async function PATCH(
   }
 
   try {
-    const existing = await getFamilyMember(id);
+    const existing = await getPartner(id);
     if (!existing) {
       return NextResponse.json(
         { error: "Anggota tidak ditemukan." },
@@ -117,8 +117,8 @@ export async function PATCH(
       momentIds: existing.momentIds,
     };
     for (const field of requestedFields) merged[field] = input[field];
-    const draft = validateFamilyMemberDraft(merged);
-    const member = await updateFamilyMember(id, draft);
+    const draft = validatePartnerDraft(merged);
+    const member = await updatePartner(id, draft);
     if (!member) {
       return NextResponse.json(
         { error: "Anggota tidak ditemukan." },
@@ -127,7 +127,7 @@ export async function PATCH(
     }
     return NextResponse.json({ member });
   } catch (error) {
-    if (error instanceof FamilyValidationError) {
+    if (error instanceof PartnerValidationError) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
     return NextResponse.json(
@@ -149,7 +149,7 @@ export async function DELETE(
     );
   }
   try {
-    const deleted = await deleteFamilyMember(id);
+    const deleted = await deletePartner(id);
     if (!deleted) {
       return NextResponse.json(
         { error: "Anggota tidak ditemukan." },

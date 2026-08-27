@@ -17,6 +17,7 @@ Yang dibutuhkan: 1 akun Google (gratis, tanpa kartu kredit).
 1. Buka **APIs & Services → Library**, cari dan **Enable**:
    - **Google Drive API**
    - **Google Sheets API**
+   - **Google Photos Picker API** (opsional, hanya untuk fitur impor dari Google Photos)
 
    Keduanya wajib; melewatkan salah satu membuat penyimpanan momen gagal dengan pesan yang membingungkan. Tunggu 1-2 menit setelah Enable agar menyebar.
 2. Buka **APIs & Services → OAuth consent screen**:
@@ -115,6 +116,24 @@ Setelah aktif, kirim foto + caption ke bot dan momen langsung masuk album. Lewat
 Momen dari bot masuk ke koleksi **Dari Telegram** sehingga mudah dirapikan belakangan.
 
 Batasan: bot Telegram hanya dapat mengunduh berkas hingga 20MB. Video lebih besar tetap perlu diunggah lewat web.
+
+---
+
+## Impor dari Google Photos
+
+Tombolnya ada di halaman **Smart Inbox**. Google membuka pemilih fotonya sendiri, kamu memilih di sana, lalu salinannya masuk ke folder Drive album.
+
+Syaratnya dua: **Google Photos Picker API** sudah di-Enable (Langkah 2), dan izinnya sudah diberikan. Kalau kamu menghubungkan akun sebelum fitur ini ada, jalankan ulang:
+
+```
+node scripts/get-refresh-token.mjs
+```
+
+Batasannya perlu diketahui sejak awal:
+
+- **Memindai album secara otomatis tidak mungkin.** Google mencabut akses baca ke seluruh pustaka foto pada 31 Maret 2025, jadi kamu tetap memilih manual.
+- **Lokasi tidak ikut.** Picker mengembalikan tanggal, nama berkas, dan merek kamera, tetapi tidak koordinat GPS. Tandai sendiri di peta kalau perlu.
+- Maksimal 20 foto per sekali impor; sisanya bisa diimpor lagi.
 
 ---
 

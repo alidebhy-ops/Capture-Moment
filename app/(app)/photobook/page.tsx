@@ -37,7 +37,7 @@ export default async function PhotoBookPage({
         <div>
           <Link href="/archive" className="back-link"><ArrowLeft size={16} /> Kembali ke pusat arsip</Link>
           <p className="eyebrow">Buku kita siap cetak</p>
-          <h1>Photobook {selectedYear || "Keluarga"}</h1>
+          <h1>Photobook {selectedYear || "Kita"}</h1>
           <p>{moments.length} cerita disusun menjadi halaman yang nyaman dibaca dan dicetak.</p>
         </div>
         <div className="photobook-actions">

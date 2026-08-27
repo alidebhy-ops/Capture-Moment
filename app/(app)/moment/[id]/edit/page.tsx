@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, PencilLine } from "lucide-react";
 import { notFound } from "next/navigation";
 import NewMomentForm from "@/components/NewMomentForm";
-import { listFamilyMembers } from "@/lib/family";
+import { listPartners } from "@/lib/partners";
 import { getMoment } from "@/lib/moments";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +15,7 @@ export default async function EditMomentPage({
   const { id } = await params;
   const [moment, members] = await Promise.all([
     getMoment(id),
-    listFamilyMembers().catch(() => []),
+    listPartners().catch(() => []),
   ]);
   if (!moment) notFound();
 

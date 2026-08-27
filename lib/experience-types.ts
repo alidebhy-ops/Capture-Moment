@@ -35,11 +35,11 @@ export type TimeCapsuleDraft = Omit<
 
 export type TimeCapsuleUpdate = Partial<TimeCapsuleDraft>;
 
-export type FamilyCalendarEventKind = "moment" | "plan" | "capsule";
+export type SharedCalendarEventKind = "moment" | "plan" | "capsule";
 
-export type FamilyCalendarEvent = {
+export type SharedCalendarEvent = {
   id: string;
-  kind: FamilyCalendarEventKind;
+  kind: SharedCalendarEventKind;
   date: string;
   title: string;
   subtitle: string;

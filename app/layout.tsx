@@ -37,7 +37,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: { default: "CaptureMoment — Ruang Kenangan Kita", template: "%s · CaptureMoment" },
     description: "Simpan foto, video, cerita, lokasi, serta rencana kita dalam satu ruang kenangan yang hangat.",
     applicationName: "CaptureMoment",
-    // A private family album behind a shared password has no business in search
+    // A private album behind a shared password has no business in search
     // results: the login page is publicly reachable and the deploy URL is
     // guessable, so being indexed is the difference between "unlisted" and
     // "findable by anyone".

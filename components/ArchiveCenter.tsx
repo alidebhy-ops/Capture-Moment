@@ -20,14 +20,14 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import type { FamilyMember } from "@/lib/family-types";
+import type { Partner } from "@/lib/partner-types";
 import { formatDateID } from "@/lib/format";
 import type { Moment, Plan } from "@/lib/types";
 
 type ArchiveCenterProps = {
   initialMoments: Moment[];
   plans: Plan[];
-  members: FamilyMember[];
+  members: Partner[];
   dataError?: string;
 };
 
@@ -401,9 +401,9 @@ export default function ArchiveCenter({
         <article className="archive-health-card">
           <span>
             <Users size={18} />
-            Keluarga
+            Profil
           </span>
-          <strong>{members.length} profil anggota</strong>
+          <strong>{members.length} profil tersimpan</strong>
           <p>
             Identitas penulis dan orang di dalam cerita ikut tersimpan pada
             backup terstruktur.

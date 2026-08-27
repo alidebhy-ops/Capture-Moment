@@ -1,11 +1,11 @@
 import { describeGoogleError } from "@/lib/google-errors";
 import { NextRequest, NextResponse } from "next/server";
 import {
-  addFamilyMember,
-  FamilyValidationError,
-  listFamilyMembers,
-  validateFamilyMemberDraft,
-} from "@/lib/family";
+  addPartner,
+  PartnerValidationError,
+  listPartners,
+  validatePartnerDraft,
+} from "@/lib/partners";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,7 +16,7 @@ function message(error: unknown, fallback: string): string {
 
 export async function GET() {
   try {
-    return NextResponse.json({ members: await listFamilyMembers() });
+    return NextResponse.json({ members: await listPartners() });
   } catch (error) {
     return NextResponse.json(
       { error: message(error, "Gagal membaca profil.") },
@@ -43,13 +43,13 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const draft = validateFamilyMemberDraft(
+    const draft = validatePartnerDraft(
       payload as Record<string, unknown>
     );
-    const member = await addFamilyMember(draft);
+    const member = await addPartner(draft);
     return NextResponse.json({ member }, { status: 201 });
   } catch (error) {
-    if (error instanceof FamilyValidationError) {
+    if (error instanceof PartnerValidationError) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
     return NextResponse.json(

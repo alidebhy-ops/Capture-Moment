@@ -92,7 +92,7 @@ function timingSafeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
-// Deliberately slow. A shared family password is short and guessable, and an
+// Deliberately slow. A shared password is short and guessable, and an
 // in-memory rate limiter cannot span serverless instances, so making each guess
 // cost real CPU is the defense that survives a cold start.
 const PASSWORD_ITERATIONS = 150_000;

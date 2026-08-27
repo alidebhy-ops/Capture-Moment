@@ -18,17 +18,17 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { formatDateID } from "@/lib/format";
 import { coverThumbSrc } from "@/lib/media";
 import {
-  type FamilyMember,
-  type FamilyMemberDraft,
-} from "@/lib/family-types";
+  type Partner,
+  type PartnerDraft,
+} from "@/lib/partner-types";
 import type { Moment } from "@/lib/types";
 
-type FamilyDirectoryProps = {
-  initialMembers: FamilyMember[];
+type PartnerDirectoryProps = {
+  initialMembers: Partner[];
   moments: Moment[];
 };
 
-type MemberForm = FamilyMemberDraft;
+type MemberForm = PartnerDraft;
 
 const AVATAR_COLORS = [
   "#a8573d",
@@ -60,7 +60,7 @@ function emptyForm(): MemberForm {
   };
 }
 
-function formFromMember(member: FamilyMember): MemberForm {
+function formFromMember(member: Partner): MemberForm {
   return {
     name: member.name,
     initials: member.initials,
@@ -85,15 +85,15 @@ function apiError(payload: unknown, fallback: string): string {
 }
 
 function memberStyle(color: string): CSSProperties {
-  return { "--family-color": color } as CSSProperties;
+  return { "--partner-color": color } as CSSProperties;
 }
 
-export default function FamilyDirectory({
+export default function PartnerDirectory({
   initialMembers,
   moments,
-}: FamilyDirectoryProps) {
+}: PartnerDirectoryProps) {
   const [members, setMembers] = useState(initialMembers);
-  const [editing, setEditing] = useState<FamilyMember | null>(null);
+  const [editing, setEditing] = useState<Partner | null>(null);
   const [form, setForm] = useState<MemberForm>(emptyForm);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -133,7 +133,7 @@ export default function FamilyDirectory({
     setDialogOpen(true);
   }
 
-  function openEdit(member: FamilyMember) {
+  function openEdit(member: Partner) {
     setEditing(member);
     setForm(formFromMember(member));
     setError("");
@@ -176,7 +176,7 @@ export default function FamilyDirectory({
       ) {
         throw new Error("Respons profil tidak lengkap.");
       }
-      const saved = result.member as FamilyMember;
+      const saved = result.member as Partner;
       setMembers((current) =>
         editing
           ? current.map((member) => (member.id === saved.id ? saved : member))
@@ -197,7 +197,7 @@ export default function FamilyDirectory({
     }
   }
 
-  async function removeMember(member: FamilyMember) {
+  async function removeMember(member: Partner) {
     if (
       !window.confirm(
         `Hapus profil ${member.name}? Komentar lama tetap tersimpan sebagai bagian dari arsip.`
@@ -229,17 +229,17 @@ export default function FamilyDirectory({
   }
 
   return (
-    <section className="family-directory" aria-labelledby="family-directory-title">
-      <div className="family-summary">
-        <div className="family-summary-copy">
-          <p className="family-eyebrow">Lingkaran terdekat</p>
-          <h1 id="family-directory-title">Orang-orang di setiap cerita</h1>
+    <section className="partner-directory" aria-labelledby="partner-directory-title">
+      <div className="partner-summary">
+        <div className="partner-summary-copy">
+          <p className="partner-eyebrow">Lingkaran terdekat</p>
+          <h1 id="partner-directory-title">Orang-orang di setiap cerita</h1>
           <p>
             Hubungkan momen dengan profil, lalu lihat perjalanan
             mereka tumbuh menjadi linimasa pribadi.
           </p>
         </div>
-        <div className="family-summary-stats" aria-label="Ringkasan kita">
+        <div className="partner-summary-stats" aria-label="Ringkasan kita">
           <div>
             <UsersRound size={20} />
             <strong>{members.length}</strong>
@@ -253,8 +253,8 @@ export default function FamilyDirectory({
         </div>
       </div>
 
-      <div className="family-toolbar">
-        <button type="button" className="family-add-button" onClick={openCreate}>
+      <div className="partner-toolbar">
+        <button type="button" className="partner-add-button" onClick={openCreate}>
           <Plus size={18} />
           Tambah profil
         </button>
@@ -262,7 +262,7 @@ export default function FamilyDirectory({
 
       {(notice || error) && (
         <div
-          className={error ? "family-notice family-notice-error" : "family-notice"}
+          className={error ? "partner-notice partner-notice-error" : "partner-notice"}
           role="status"
         >
           <span>{error || notice}</span>
@@ -280,7 +280,7 @@ export default function FamilyDirectory({
       )}
 
       {members.length ? (
-        <div className="family-grid">
+        <div className="partner-grid">
           {members.map((member) => {
             const memberMoments = moments
               .filter(
@@ -293,25 +293,25 @@ export default function FamilyDirectory({
             return (
               <article
                 key={member.id}
-                className="family-card-profile"
+                className="partner-card-profile"
                 style={memberStyle(member.color)}
               >
-                <div className="family-card-head">
-                  <span className="family-avatar" aria-hidden="true">
+                <div className="partner-card-head">
+                  <span className="partner-avatar" aria-hidden="true">
                     {member.initials || initialsFor(member.name)}
                   </span>
-                  <div className="family-card-identity">
+                  <div className="partner-card-identity">
                     <h2>{member.name}</h2>
                     <p>{member.relationship || "Profil kita"}</p>
                   </div>
                 </div>
 
-                <p className="family-card-bio">
+                <p className="partner-card-bio">
                   {member.bio ||
                     "Belum ada catatan singkat. Tambahkan hal kecil yang membuatnya istimewa."}
                 </p>
 
-                <div className="family-timeline-summary">
+                <div className="partner-timeline-summary">
                   <div>
                     <Camera size={16} />
                     <span>
@@ -327,7 +327,7 @@ export default function FamilyDirectory({
                 </div>
 
                 {memberMoments.length > 0 && (
-                  <div className="family-cover-strip" aria-hidden="true">
+                  <div className="partner-cover-strip" aria-hidden="true">
                     {memberMoments.slice(0, 3).map((moment) =>
                       coverThumbSrc(moment, 200) ? (
                         <img key={moment.id} src={coverThumbSrc(moment, 200)} alt="" loading="lazy" />
@@ -341,7 +341,7 @@ export default function FamilyDirectory({
                   </div>
                 )}
 
-                <div className="family-card-actions">
+                <div className="partner-card-actions">
                   <div>
                     <button
                       type="button"
@@ -357,7 +357,7 @@ export default function FamilyDirectory({
                       onClick={() => removeMember(member)}
                     >
                       {deleting === member.id ? (
-                        <LoaderCircle className="family-spin" size={15} />
+                        <LoaderCircle className="partner-spin" size={15} />
                       ) : (
                         <Trash2 size={15} />
                       )}
@@ -372,7 +372,7 @@ export default function FamilyDirectory({
           })}
         </div>
       ) : (
-        <div className="family-empty">
+        <div className="partner-empty">
           <UserRound size={28} />
           <h2>Tidak ada profil yang cocok</h2>
           <p>Ubah kata pencarian atau tambahkan profil baru.</p>
@@ -381,7 +381,7 @@ export default function FamilyDirectory({
 
       {dialogOpen && (
         <div
-          className="family-dialog-backdrop"
+          className="partner-dialog-backdrop"
           role="presentation"
           onMouseDown={(event) => {
             if (event.currentTarget === event.target && !saving) {
@@ -390,15 +390,15 @@ export default function FamilyDirectory({
           }}
         >
           <div
-            className="family-dialog"
+            className="partner-dialog"
             role="dialog"
             aria-modal="true"
-            aria-labelledby="family-dialog-title"
+            aria-labelledby="partner-dialog-title"
           >
-            <header className="family-dialog-header">
+            <header className="partner-dialog-header">
               <div>
-                <p className="family-eyebrow">Profil kita</p>
-                <h2 id="family-dialog-title">
+                <p className="partner-eyebrow">Profil kita</p>
+                <h2 id="partner-dialog-title">
                   {editing ? "Perbarui anggota" : "Tambahkan wajah baru"}
                 </h2>
               </div>
@@ -412,9 +412,9 @@ export default function FamilyDirectory({
               </button>
             </header>
 
-            <form className="family-form" onSubmit={saveMember}>
-              <div className="family-form-grid">
-                <label className="family-field">
+            <form className="partner-form" onSubmit={saveMember}>
+              <div className="partner-form-grid">
+                <label className="partner-field">
                   <span>Nama lengkap</span>
                   <input
                     required
@@ -424,7 +424,7 @@ export default function FamilyDirectory({
                     placeholder="Contoh: Aulia Rahma"
                   />
                 </label>
-                <label className="family-field">
+                <label className="partner-field">
                   <span>Inisial</span>
                   <input
                     maxLength={4}
@@ -438,7 +438,7 @@ export default function FamilyDirectory({
                     placeholder={initialsFor(form.name) || "AR"}
                   />
                 </label>
-                <label className="family-field">
+                <label className="partner-field">
                   <span>Hubungan & julukan</span>
                   <input
                     maxLength={80}
@@ -449,7 +449,7 @@ export default function FamilyDirectory({
                     placeholder="Ibu · Perangkai cerita"
                   />
                 </label>
-                <label className="family-field">
+                <label className="partner-field">
                   <span>Tanggal lahir</span>
                   <input
                     type="date"
@@ -459,14 +459,14 @@ export default function FamilyDirectory({
                     }
                   />
                 </label>
-                <fieldset className="family-color-field">
+                <fieldset className="partner-color-field">
                   <legend>Warna profil</legend>
                   <div>
                     {AVATAR_COLORS.map((color) => (
                       <button
                         key={color}
                         type="button"
-                        className={form.color === color ? "family-color-active" : ""}
+                        className={form.color === color ? "partner-color-active" : ""}
                         style={{ backgroundColor: color }}
                         aria-label={`Pilih warna ${color}`}
                         aria-pressed={form.color === color}
@@ -475,7 +475,7 @@ export default function FamilyDirectory({
                     ))}
                   </div>
                 </fieldset>
-                <label className="family-field family-field-wide">
+                <label className="partner-field partner-field-wide">
                   <span>Cerita singkat</span>
                   <textarea
                     maxLength={600}
@@ -487,11 +487,11 @@ export default function FamilyDirectory({
               </div>
 
 
-              {error && <p className="family-form-error">{error}</p>}
-              <footer className="family-dialog-actions">
+              {error && <p className="partner-form-error">{error}</p>}
+              <footer className="partner-dialog-actions">
                 <button
                   type="button"
-                  className="family-cancel-button"
+                  className="partner-cancel-button"
                   disabled={saving}
                   onClick={() => setDialogOpen(false)}
                 >
@@ -499,10 +499,10 @@ export default function FamilyDirectory({
                 </button>
                 <button
                   type="submit"
-                  className="family-save-button"
+                  className="partner-save-button"
                   disabled={saving}
                 >
-                  {saving && <LoaderCircle className="family-spin" size={17} />}
+                  {saving && <LoaderCircle className="partner-spin" size={17} />}
                   {saving ? "Menyimpan..." : editing ? "Simpan perubahan" : "Tambah anggota"}
                 </button>
               </footer>

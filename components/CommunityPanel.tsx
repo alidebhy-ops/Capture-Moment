@@ -8,19 +8,20 @@ import {
   UsersRound,
 } from "lucide-react";
 import { useMemo, useState, type CSSProperties } from "react";
-import { IDENTITY_COOKIE, persistIdentity, readIdentityFromCookie } from "@/lib/identity";
+import { persistIdentity } from "@/lib/identity";
 import {
   COMMUNITY_REACTIONS,
   type CommunityComment,
   type CommunityReactionKind,
-  type FamilyMember,
+  type Partner,
   type MomentCommunity,
-} from "@/lib/family-types";
+} from "@/lib/partner-types";
 
 type CommunityPanelProps = {
   momentId: string;
   initialCommunity: MomentCommunity;
-  members: FamilyMember[];
+  members: Partner[];
+  initialIdentity: string;
 };
 
 const REACTION_META: Record<
@@ -64,19 +65,14 @@ export default function CommunityPanel({
   momentId,
   initialCommunity,
   members,
+  initialIdentity,
 }: CommunityPanelProps) {
   const [community, setCommunity] = useState(initialCommunity);
-  // Identitas diingat perangkat supaya tidak perlu dipilih ulang tiap menulis.
-  const [authorId, setAuthorId] = useState(() => {
-    if (typeof document === "undefined") return members[0]?.id ?? "";
-    const stored = document.cookie
-      .split("; ")
-      .find((entry) => entry.startsWith(`${IDENTITY_COOKIE}=`))
-      ?.split("=")[1];
-    return readIdentityFromCookie(stored, members.map((m) => m.id))
-      ?? members[0]?.id
-      ?? "";
-  });
+  // Identitas dibaca di server dari cookie lalu diteruskan sebagai prop, supaya
+  // render pertama sudah benar dan tidak berkedip.
+  // Sengaja kosong kalau belum pernah memilih, supaya pemilihnya yang muncul
+  // lebih dulu alih-alih menebak salah satu dari kalian.
+  const [authorId, setAuthorId] = useState(initialIdentity);
   const [switchingIdentity, setSwitchingIdentity] = useState(false);
 
   function chooseIdentity(memberId: string) {

@@ -21,7 +21,7 @@ import {
   WandSparkles,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import type { FamilyMember } from "@/lib/family-types";
+import type { Partner } from "@/lib/partner-types";
 import { mediaSrc } from "@/lib/media";
 import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB, oversizedMediaMessage } from "@/lib/upload-limits";
 import type { Moment, Plan } from "@/lib/types";
@@ -82,7 +82,7 @@ const storyPrompts = [
   "Apa yang paling membuat semua orang tertawa?",
   "Seperti apa suasana, cuaca, atau aroma hari itu?",
 ];
-const emptyFamilyMembers: FamilyMember[] = [];
+const emptyPartners: Partner[] = [];
 
 function collectionForPlan(plan?: Plan) {
   if (!plan) return collections[0];
@@ -101,7 +101,7 @@ function storyForPlan(plan?: Plan) {
 function initialDraftFields(
   initialPlan: Plan | undefined,
   initialMoment: Moment | undefined,
-  members: FamilyMember[]
+  members: Partner[]
 ): DraftFields {
   return {
     title: initialMoment?.title ?? initialPlan?.title ?? "",
@@ -149,11 +149,11 @@ function draftDiffersFrom(
 export default function NewMomentForm({
   initialPlan,
   initialMoment,
-  members = emptyFamilyMembers,
+  members = emptyPartners,
 }: {
   initialPlan?: Plan;
   initialMoment?: Moment;
-  members?: FamilyMember[];
+  members?: Partner[];
 }) {
   const router = useRouter();
   const baselineDraft = initialDraftFields(initialPlan, initialMoment, members);

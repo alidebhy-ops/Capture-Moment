@@ -1,6 +1,6 @@
 import { Camera } from "lucide-react";
 import NewMomentForm from "@/components/NewMomentForm";
-import { listFamilyMembers } from "@/lib/family";
+import { listPartners } from "@/lib/partners";
 import { getPlan } from "@/lib/plans";
 
 export default async function NewMomentPage({
@@ -11,7 +11,7 @@ export default async function NewMomentPage({
   const { plan: planId } = await searchParams;
   const [initialPlan, members] = await Promise.all([
     planId ? getPlan(planId).catch(() => null) : Promise.resolve(null),
-    listFamilyMembers().catch(() => []),
+    listPartners().catch(() => []),
   ]);
 
   return (

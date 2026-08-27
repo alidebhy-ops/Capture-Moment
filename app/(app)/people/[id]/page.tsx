@@ -10,7 +10,7 @@ import {
   FolderHeart,
   Sparkles,
 } from "lucide-react";
-import { getFamilyMember } from "@/lib/family";
+import { getPartner } from "@/lib/partners";
 import { formatDateID } from "@/lib/format";
 import { coverThumbSrc } from "@/lib/media";
 import { listMoments } from "@/lib/moments";
@@ -32,7 +32,7 @@ export default async function PersonTimelinePage({
 }) {
   const { id } = await params;
   const [member, allMoments] = await Promise.all([
-    getFamilyMember(id).catch(() => null),
+    getPartner(id).catch(() => null),
     listMoments().catch(() => []),
   ]);
   if (!member) notFound();

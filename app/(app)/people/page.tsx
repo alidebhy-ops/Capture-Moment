@@ -1,13 +1,13 @@
 import DataLoadNotice from "@/components/DataLoadNotice";
-import FamilyDirectory from "@/components/FamilyDirectory";
-import { listFamilyMembers } from "@/lib/family";
+import PartnerDirectory from "@/components/PartnerDirectory";
+import { listPartners } from "@/lib/partners";
 import { listMoments } from "@/lib/moments";
 
 export const dynamic = "force-dynamic";
 
 export default async function PeoplePage() {
   const [membersResult, momentsResult] = await Promise.allSettled([
-    listFamilyMembers(),
+    listPartners(),
     listMoments(),
   ]);
   if (membersResult.status === "rejected") {
@@ -29,7 +29,7 @@ export default async function PeoplePage() {
           detail="Profil tetap dapat dikelola, tetapi relasi momen sedang tidak tersedia."
         />
       )}
-      <FamilyDirectory
+      <PartnerDirectory
         initialMembers={membersResult.value}
         moments={momentsResult.status === "fulfilled" ? momentsResult.value : []}
       />

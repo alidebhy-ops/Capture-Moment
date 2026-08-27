@@ -101,7 +101,7 @@ export default function AppNav({ demoMode }: { demoMode: boolean }) {
           <span><strong>Capture</strong>Moment</span>
         </Link>
 
-        <div className="family-card">
+        <div className="partner-card">
           <div className="avatar-stack" aria-hidden="true">
             <span>MA</span><span>RA</span>
           </div>

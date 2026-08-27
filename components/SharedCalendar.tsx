@@ -17,13 +17,13 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import type {
-  FamilyCalendarEvent,
-  FamilyCalendarEventKind,
+  SharedCalendarEvent,
+  SharedCalendarEventKind,
   TimeCapsule,
 } from "@/lib/experience-types";
 import type { Moment, Plan } from "@/lib/types";
 
-type FamilyCalendarProps = {
+type SharedCalendarProps = {
   moments: Moment[];
   plans: Plan[];
   capsules: TimeCapsule[];
@@ -32,7 +32,7 @@ type FamilyCalendarProps = {
 
 const DAY_NAMES = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
 
-const KIND_LABELS: Record<FamilyCalendarEventKind, string> = {
+const KIND_LABELS: Record<SharedCalendarEventKind, string> = {
   moment: "Kenangan",
   plan: "Rencana",
   capsule: "Kapsul",
@@ -104,8 +104,8 @@ function buildCalendarEvents(
   moments: Moment[],
   plans: Plan[],
   capsules: TimeCapsule[]
-): FamilyCalendarEvent[] {
-  const events: FamilyCalendarEvent[] = [];
+): SharedCalendarEvent[] {
+  const events: SharedCalendarEvent[] = [];
   for (const moment of moments) {
     const date = simpleDate(moment.date);
     if (!date) continue;
@@ -142,7 +142,7 @@ function buildCalendarEvents(
       title: capsule.title,
       subtitle: capsule.isUnlocked
         ? `Terbuka · dari ${capsule.creatorLabel}`
-        : `Akan dibuka · untuk ${capsule.recipientMemberIds.join(", ") || "keluarga"}`,
+        : `Akan dibuka · untuk ${capsule.recipientMemberIds.join(", ") || "kita berdua"}`,
       href: "/capsules",
       isUnlocked: capsule.isUnlocked,
     });
@@ -153,18 +153,18 @@ function buildCalendarEvents(
   });
 }
 
-function EventIcon({ kind }: { kind: FamilyCalendarEventKind }) {
+function EventIcon({ kind }: { kind: SharedCalendarEventKind }) {
   if (kind === "moment") return <ImageIcon size={15} />;
   if (kind === "plan") return <ListTodo size={15} />;
   return <Lock size={15} />;
 }
 
-export default function FamilyCalendar({
+export default function SharedCalendar({
   moments,
   plans,
   capsules,
   nowIso,
-}: FamilyCalendarProps) {
+}: SharedCalendarProps) {
   const todayKey = simpleDate(nowIso) || simpleDate(new Date().toISOString());
   const today = dateFromKey(todayKey);
   const allEvents = useMemo(
@@ -174,7 +174,7 @@ export default function FamilyCalendar({
   const initialMonth = monthKey(today);
   const [visibleMonth, setVisibleMonth] = useState(initialMonth);
   const [activeKind, setActiveKind] = useState<
-    FamilyCalendarEventKind | "all"
+    SharedCalendarEventKind | "all"
   >("all");
   const [selectedDate, setSelectedDate] = useState(todayKey);
 
@@ -196,7 +196,7 @@ export default function FamilyCalendar({
   );
 
   const eventsByDate = useMemo(() => {
-    const grouped = new Map<string, FamilyCalendarEvent[]>();
+    const grouped = new Map<string, SharedCalendarEvent[]>();
     for (const event of monthEvents) {
       const current = grouped.get(event.date) ?? [];
       current.push(event);
@@ -241,10 +241,10 @@ export default function FamilyCalendar({
   }
 
   return (
-    <div className="family-calendar-page">
-      <header className="family-calendar-header">
+    <div className="shared-calendar-page">
+      <header className="shared-calendar-header">
         <div>
-          <p className="family-calendar-eyebrow">
+          <p className="shared-calendar-eyebrow">
             <Sparkles size={14} /> Kalender kita
           </p>
           <h1>Masa lalu dan rencana, dalam satu garis waktu.</h1>
@@ -254,7 +254,7 @@ export default function FamilyCalendar({
           </p>
         </div>
         {nextEvent && (
-          <div className="family-calendar-next">
+          <div className="shared-calendar-next">
             <span>
               <Clock3 size={15} /> Berikutnya
             </span>
@@ -265,18 +265,18 @@ export default function FamilyCalendar({
       </header>
 
       <section
-        className="family-calendar-summary"
+        className="shared-calendar-summary"
         aria-label="Ringkasan kalender"
       >
         <div>
-          <span className="family-calendar-summary-icon family-calendar-summary-moment">
+          <span className="shared-calendar-summary-icon shared-calendar-summary-moment">
             <ImageIcon size={19} />
           </span>
           <strong>{moments.length}</strong>
           <small>kenangan bertanggal</small>
         </div>
         <div>
-          <span className="family-calendar-summary-icon family-calendar-summary-plan">
+          <span className="shared-calendar-summary-icon shared-calendar-summary-plan">
             <ListTodo size={19} />
           </span>
           <strong>
@@ -285,7 +285,7 @@ export default function FamilyCalendar({
           <small>rencana aktif</small>
         </div>
         <div>
-          <span className="family-calendar-summary-icon family-calendar-summary-capsule">
+          <span className="shared-calendar-summary-icon shared-calendar-summary-capsule">
             <Lock size={19} />
           </span>
           <strong>
@@ -295,10 +295,10 @@ export default function FamilyCalendar({
         </div>
       </section>
 
-      <section className="family-calendar-workspace">
-        <div className="family-calendar-main">
-          <div className="family-calendar-toolbar">
-            <div className="family-calendar-month-controls">
+      <section className="shared-calendar-workspace">
+        <div className="shared-calendar-main">
+          <div className="shared-calendar-toolbar">
+            <div className="shared-calendar-month-controls">
               <button
                 type="button"
                 onClick={() => moveMonth(-1)}
@@ -317,7 +317,7 @@ export default function FamilyCalendar({
             </div>
             <button
               type="button"
-              className="family-calendar-today-button"
+              className="shared-calendar-today-button"
               onClick={returnToday}
             >
               <RotateCcw size={15} /> Hari ini
@@ -325,7 +325,7 @@ export default function FamilyCalendar({
           </div>
 
           <div
-            className="family-calendar-filters"
+            className="shared-calendar-filters"
             aria-label="Filter jenis agenda"
           >
             {(["all", "moment", "plan", "capsule"] as const).map((kind) => (
@@ -346,11 +346,11 @@ export default function FamilyCalendar({
             ))}
           </div>
 
-          <div className="family-calendar-grid" role="grid">
+          <div className="shared-calendar-grid" role="grid">
             {DAY_NAMES.map((day) => (
               <div
                 key={day}
-                className="family-calendar-weekday"
+                className="shared-calendar-weekday"
                 role="columnheader"
               >
                 {day}
@@ -368,7 +368,7 @@ export default function FamilyCalendar({
                   role="gridcell"
                   key={key}
                   className={[
-                    "family-calendar-day",
+                    "shared-calendar-day",
                     outside ? "is-outside" : "",
                     isToday ? "is-today" : "",
                     isSelected ? "is-selected" : "",
@@ -385,14 +385,14 @@ export default function FamilyCalendar({
                   aria-label={`${longDate(key)}, ${events.length} agenda`}
                   aria-selected={isSelected}
                 >
-                  <span className="family-calendar-day-number">
+                  <span className="shared-calendar-day-number">
                     {date.getUTCDate()}
                   </span>
-                  <span className="family-calendar-day-events">
+                  <span className="shared-calendar-day-events">
                     {events.slice(0, 3).map((event) => (
                       <span
                         key={event.id}
-                        className={`family-calendar-event-dot family-calendar-event-${event.kind}`}
+                        className={`shared-calendar-event-dot shared-calendar-event-${event.kind}`}
                         title={event.title}
                       >
                         <EventIcon kind={event.kind} />
@@ -409,20 +409,20 @@ export default function FamilyCalendar({
           </div>
         </div>
 
-        <aside className="family-calendar-agenda">
-          <div className="family-calendar-agenda-heading">
-            <p className="family-calendar-eyebrow">Agenda pilihan</p>
+        <aside className="shared-calendar-agenda">
+          <div className="shared-calendar-agenda-heading">
+            <p className="shared-calendar-eyebrow">Agenda pilihan</p>
             <h2>{longDate(effectiveSelectedDate)}</h2>
           </div>
           {selectedEvents.length ? (
-            <div className="family-calendar-agenda-list">
+            <div className="shared-calendar-agenda-list">
               {selectedEvents.map((event) => (
                 <Link
                   href={event.href}
                   key={event.id}
-                  className={`family-calendar-agenda-item family-calendar-agenda-${event.kind}`}
+                  className={`shared-calendar-agenda-item shared-calendar-agenda-${event.kind}`}
                 >
-                  <span className="family-calendar-agenda-icon">
+                  <span className="shared-calendar-agenda-icon">
                     <EventIcon kind={event.kind} />
                   </span>
                   <span>
@@ -439,7 +439,7 @@ export default function FamilyCalendar({
               ))}
             </div>
           ) : (
-            <div className="family-calendar-agenda-empty">
+            <div className="shared-calendar-agenda-empty">
               <CalendarDays size={24} />
               <strong>Hari yang masih lapang.</strong>
               <p>
@@ -449,7 +449,7 @@ export default function FamilyCalendar({
           )}
 
           {upcoming.length > 0 && (
-            <div className="family-calendar-upcoming">
+            <div className="shared-calendar-upcoming">
               <h3>Yang akan datang</h3>
               {upcoming.map((event) => (
                 <Link href={event.href} key={`upcoming-${event.id}`}>

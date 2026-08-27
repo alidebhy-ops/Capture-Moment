@@ -62,7 +62,7 @@ function fingerprint(file: File) {
 
 const sampleGroups = [
   { title: "Pagi di tepi pantai", meta: "8 foto · GPS ditemukan", image: "/demo/beach.jpg" },
-  { title: "Ulang tahun Ibu", meta: "6 foto · 1 video", image: "/demo/birthday.jpg" },
+  { title: "Malam ulang tahun", meta: "6 foto · 1 video", image: "/demo/birthday.jpg" },
   { title: "Perjalanan ke Bromo", meta: "12 foto · tanggal EXIF", image: "/demo/bromo.jpg" },
 ];
 

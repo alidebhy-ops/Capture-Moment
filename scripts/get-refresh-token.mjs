@@ -8,6 +8,9 @@ const REDIRECT_URI = `http://localhost:${PORT}/callback`;
 const SCOPES = [
   "https://www.googleapis.com/auth/drive.file",
   "https://www.googleapis.com/auth/spreadsheets",
+  // Untuk memilih foto lewat Google Photos Picker. API lama yang bisa membaca
+  // seluruh album sudah dicabut Google pada 31 Maret 2025.
+  "https://www.googleapis.com/auth/photospicker.mediaitems.readonly",
 ];
 
 const ENV_FILE = path.join(process.cwd(), ".env.local");

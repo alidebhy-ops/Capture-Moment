@@ -1,5 +1,5 @@
 import DataLoadNotice from "@/components/DataLoadNotice";
-import FamilyCalendar from "@/components/FamilyCalendar";
+import SharedCalendar from "@/components/SharedCalendar";
 import { listTimeCapsules } from "@/lib/capsules";
 import type { TimeCapsule } from "@/lib/experience-types";
 import { todayISOInTimeZone } from "@/lib/format";
@@ -32,7 +32,7 @@ export default async function CalendarPage() {
           detail={`Data ${failedLabels.join(", ")} sedang tidak tersedia. Agenda lain tetap dapat dijelajahi.`}
         />
       )}
-      <FamilyCalendar
+      <SharedCalendar
         moments={moments}
         plans={plans}
         capsules={capsules}

@@ -1,4 +1,4 @@
-export type FamilyMember = {
+export type Partner = {
   id: string;
   name: string;
   initials: string;
@@ -11,12 +11,12 @@ export type FamilyMember = {
   updatedAt: string;
 };
 
-export type FamilyMemberDraft = Omit<
-  FamilyMember,
+export type PartnerDraft = Omit<
+  Partner,
   "id" | "createdAt" | "updatedAt"
 >;
 
-export type FamilyMemberUpdate = Partial<FamilyMemberDraft>;
+export type PartnerUpdate = Partial<PartnerDraft>;
 
 export const COMMUNITY_REACTIONS = [
   "heart",

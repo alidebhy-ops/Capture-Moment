@@ -1,10 +1,10 @@
 import type {
   CommunityComment,
   CommunityReaction,
-  FamilyMember,
-} from "./family-types";
+  Partner,
+} from "./partner-types";
 
-export const demoFamilyMembers: FamilyMember[] = [
+export const demoPartners: Partner[] = [
   {
     id: "member-akbar",
     name: "Muhammad Ali Akbar",

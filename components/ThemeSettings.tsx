@@ -241,7 +241,7 @@ export default function ThemeSettings() {
 
               <article className="theme-memory-preview">
                 <Image
-                  src="/demo/family.jpg"
+                  src="/demo/couple.jpg"
                   alt="Menghabiskan waktu berdua"
                   fill
                   sizes="(max-width: 760px) 90vw, 420px"

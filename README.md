@@ -16,6 +16,7 @@ CaptureMoment adalah ruang kenangan keluarga: foto, video, cerita, orang, tempat
 - **Capture Pocket (PWA)** — dapat dipasang di perangkat, shortcut cepat, capture kamera, dan halaman offline.
 - **Wishlist & planner** — anggaran, tabungan, checklist, target waktu, dan konversi rencana menjadi momen.
 - **Peta perjalanan** — visualisasi seluruh momen berlokasi dengan Leaflet + OpenStreetMap.
+- **Impor Google Photos** — pilih foto lewat Picker resmi Google, salinannya masuk ke album.
 - **Bot Telegram** — kirim foto, caption, dan lokasi ke bot; momen langsung masuk album.
 - **Tema personal** — mode terang, gelap, otomatis mengikuti perangkat, serta lima pilihan warna aksen yang tersimpan.
 
@@ -52,6 +53,7 @@ Untuk menyimpan data nyata di Google Drive dan Google Sheets, ikuti [SETUP.md](.
 | `/new` | Story Studio untuk membuat cerita baru |
 | `/archive` | Backup, trash, restore, dan pintasan photobook |
 | `/photobook` | Album keluarga siap cetak atau simpan sebagai PDF |
+| `/panduan` | Panduan pemakaian untuk pasangan yang baru pertama membuka |
 | `/settings` | Pengaturan mode tampilan dan warna aksen |
 | `/offline` | Pengalaman fallback ketika PWA sedang offline |
 | `/login` | Gerbang password keluarga dan akses preview demo |

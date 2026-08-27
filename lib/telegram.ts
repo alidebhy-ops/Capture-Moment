@@ -73,7 +73,7 @@ export function isValidWebhookSecret(header: string | null): boolean {
 }
 
 // A valid secret proves the request came from Telegram, not that the sender is
-// family. Anyone can message a bot whose username they know.
+// one of you. Anyone can message a bot whose username they know.
 export function isAllowedChat(chatId: number): boolean {
   const allowed = (process.env.TELEGRAM_ALLOWED_CHAT_IDS ?? "")
     .split(",")

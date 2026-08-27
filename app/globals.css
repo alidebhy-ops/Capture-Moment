@@ -295,7 +295,7 @@ img, video { display: block; }
   color: var(--on-accent);
   box-shadow: 0 7px 16px rgba(var(--accent-rgb), 0.21);
 }
-.family-card {
+.partner-card {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -305,8 +305,8 @@ img, video { display: block; }
   border-radius: 14px;
   background: var(--surface);
 }
-.family-card p { margin: 0; font-size: 0.82rem; font-weight: 750; }
-.family-card > div:last-child > span { color: var(--ink-soft); font-size: 0.7rem; }
+.partner-card p { margin: 0; font-size: 0.82rem; font-weight: 750; }
+.partner-card > div:last-child > span { color: var(--ink-soft); font-size: 0.7rem; }
 .avatar-stack { display: flex; min-width: 57px; }
 .avatar-stack span {
   display: grid;

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import ArchiveCenter from "@/components/ArchiveCenter";
-import { listFamilyMembers } from "@/lib/family";
+import { listPartners } from "@/lib/partners";
 import { listAllMoments } from "@/lib/moments";
 import { listPlans } from "@/lib/plans";
 
@@ -26,7 +26,7 @@ export default async function ArchivePage() {
     await Promise.allSettled([
       listAllMoments(),
       listPlans(),
-      listFamilyMembers(),
+      listPartners(),
     ]);
 
   const errors = [

@@ -1,5 +1,7 @@
 import { ScanSearch } from "lucide-react";
+import GooglePhotosImport from "@/components/GooglePhotosImport";
 import SmartInbox from "@/components/SmartInbox";
+import { isDemoMode } from "@/lib/demo";
 
 export default function SmartInboxPage() {
   return (
@@ -12,6 +14,7 @@ export default function SmartInboxPage() {
         </div>
         <span className="page-header-icon"><ScanSearch size={23} /></span>
       </header>
+      <GooglePhotosImport demoMode={isDemoMode()} />
       <SmartInbox />
     </div>
   );

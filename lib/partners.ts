@@ -1,11 +1,11 @@
 import { cache } from "react";
-import { demoFamilyMembers } from "./demo-family";
+import { demoPartners } from "./demo-partners";
 import { isDemoMode } from "./demo";
 import {
-  type FamilyMember,
-  type FamilyMemberDraft,
-  type FamilyMemberUpdate,
-} from "./family-types";
+  type Partner,
+  type PartnerDraft,
+  type PartnerUpdate,
+} from "./partner-types";
 import { getSheetId, getSheets } from "./google";
 
 // Kolom keempat dulu menyimpan peran anggota. Konsep peran sudah dibuang, tetapi
@@ -14,10 +14,10 @@ const LEGACY_ROLE_CELL = "-";
 import { ensureTabOnce } from "./sheet-setup";
 
 export type {
-  FamilyMember,
-  FamilyMemberDraft,
-  FamilyMemberUpdate,
-} from "./family-types";
+  Partner,
+  PartnerDraft,
+  PartnerUpdate,
+} from "./partner-types";
 
 const SHEET_TITLE = "Members";
 const RANGE = `${SHEET_TITLE}!A:L`;
@@ -38,10 +38,10 @@ const HEADER = [
 
 const DEFAULT_AVATAR_COLOR = "#a8573d";
 
-export class FamilyValidationError extends Error {
+export class PartnerValidationError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = "FamilyValidationError";
+    this.name = "PartnerValidationError";
   }
 }
 
@@ -53,7 +53,7 @@ function textField(
 ): string {
   const result = value === undefined ? fallback : String(value ?? "").trim();
   if (result.length > maxLength) {
-    throw new FamilyValidationError(
+    throw new PartnerValidationError(
       `${label} maksimal ${maxLength.toLocaleString("id-ID")} karakter.`
     );
   }
@@ -69,7 +69,7 @@ function dateField(value: unknown): string {
     Number.isNaN(parsed.getTime()) ||
     parsed.toISOString().slice(0, 10) !== date
   ) {
-    throw new FamilyValidationError("Tanggal lahir tidak valid.");
+    throw new PartnerValidationError("Tanggal lahir tidak valid.");
   }
   return date;
 }
@@ -82,7 +82,7 @@ function avatarColorField(value: unknown): string {
     DEFAULT_AVATAR_COLOR
   ).toLowerCase();
   if (!/^#[0-9a-f]{6}$/.test(color)) {
-    throw new FamilyValidationError("Warna avatar harus berupa kode warna hex.");
+    throw new PartnerValidationError("Warna avatar harus berupa kode warna hex.");
   }
   return color;
 }
@@ -95,22 +95,22 @@ function momentIdsField(value: unknown): string[] {
       ? value.split(",")
       : null;
   if (!ids) {
-    throw new FamilyValidationError("Daftar momen anggota tidak valid.");
+    throw new PartnerValidationError("Daftar momen anggota tidak valid.");
   }
   if (ids.length > 500) {
-    throw new FamilyValidationError("Momen anggota maksimal 500 item.");
+    throw new PartnerValidationError("Momen anggota maksimal 500 item.");
   }
   const normalized = ids
     .map((id) => {
       if (typeof id !== "string") {
-        throw new FamilyValidationError("ID momen tidak valid.");
+        throw new PartnerValidationError("ID momen tidak valid.");
       }
       const result = id.trim();
       if (
         result &&
         (!/^[A-Za-z0-9_-]{1,80}$/.test(result) || result.length > 80)
       ) {
-        throw new FamilyValidationError("ID momen tidak valid.");
+        throw new PartnerValidationError("ID momen tidak valid.");
       }
       return result;
     })
@@ -118,16 +118,16 @@ function momentIdsField(value: unknown): string[] {
   return [...new Set(normalized)];
 }
 
-export function validateFamilyMemberDraft(
+export function validatePartnerDraft(
   payload: Record<string, unknown>
-): FamilyMemberDraft {
+): PartnerDraft {
   const name = textField(payload.name, "Nama", 80);
   if (!name) {
-    throw new FamilyValidationError("Nama anggota wajib diisi.");
+    throw new PartnerValidationError("Nama anggota wajib diisi.");
   }
   const requestedInitials = textField(payload.initials, "Inisial", 4);
   if (requestedInitials && !/^[\p{L}\p{N}]{1,4}$/u.test(requestedInitials)) {
-    throw new FamilyValidationError(
+    throw new PartnerValidationError(
       "Inisial hanya boleh berisi 1–4 huruf atau angka."
     );
   }
@@ -154,22 +154,22 @@ export function validateFamilyMemberDraft(
 }
 
 declare global {
-  var captureMomentDemoFamilyMembers: FamilyMember[] | undefined;
+  var captureMomentDemoPartners: Partner[] | undefined;
 }
 
-function demoStore(): FamilyMember[] {
-  if (!globalThis.captureMomentDemoFamilyMembers) {
-    globalThis.captureMomentDemoFamilyMembers =
-      structuredClone(demoFamilyMembers);
+function demoStore(): Partner[] {
+  if (!globalThis.captureMomentDemoPartners) {
+    globalThis.captureMomentDemoPartners =
+      structuredClone(demoPartners);
   }
-  return globalThis.captureMomentDemoFamilyMembers;
+  return globalThis.captureMomentDemoPartners;
 }
 
 function cell(row: unknown[], index: number): string {
   return String(row[index] ?? "").trim();
 }
 
-function rowToMember(row: unknown[]): FamilyMember | null {
+function rowToMember(row: unknown[]): Partner | null {
   const id = cell(row, 0);
   if (!id || id === "id") return null;
   return {
@@ -191,7 +191,7 @@ function rowToMember(row: unknown[]): FamilyMember | null {
   };
 }
 
-function memberToRow(member: FamilyMember): string[] {
+function memberToRow(member: Partner): string[] {
   return [
     member.id,
     member.name,
@@ -208,7 +208,7 @@ function memberToRow(member: FamilyMember): string[] {
   ];
 }
 
-function sortMembers(members: FamilyMember[]): FamilyMember[] {
+function sortMembers(members: Partner[]): Partner[] {
   return members.sort((a, b) => a.name.localeCompare(b.name, "id-ID"));
 }
 
@@ -267,7 +267,7 @@ async function setUpMembersSheet(): Promise<number> {
   return properties.sheetId;
 }
 
-type StoredMember = { member: FamilyMember; rowNumber: number };
+type StoredMember = { member: Partner; rowNumber: number };
 
 async function readStoredMembers(): Promise<{
   sheetId: number;
@@ -296,15 +296,15 @@ async function readStoredMembers(): Promise<{
 // they never compute a row number from a stale snapshot.
 const cachedReadStoredMembers = cache(readStoredMembers);
 
-export async function listFamilyMembers(): Promise<FamilyMember[]> {
+export async function listPartners(): Promise<Partner[]> {
   if (isDemoMode()) return sortMembers(structuredClone(demoStore()));
   const { members } = await cachedReadStoredMembers();
   return sortMembers(members.map(({ member }) => member));
 }
 
-export async function getFamilyMember(
+export async function getPartner(
   id: string
-): Promise<FamilyMember | null> {
+): Promise<Partner | null> {
   if (isDemoMode()) {
     const member = demoStore().find((item) => item.id === id);
     return member ? structuredClone(member) : null;
@@ -313,11 +313,11 @@ export async function getFamilyMember(
   return members.find(({ member }) => member.id === id)?.member ?? null;
 }
 
-export async function addFamilyMember(
-  draft: FamilyMemberDraft
-): Promise<FamilyMember> {
+export async function addPartner(
+  draft: PartnerDraft
+): Promise<Partner> {
   const now = new Date().toISOString();
-  const member: FamilyMember = {
+  const member: Partner = {
     ...structuredClone(draft),
     id: `member-${crypto.randomUUID().slice(0, 8)}`,
     createdAt: now,
@@ -341,15 +341,15 @@ export async function addFamilyMember(
   return member;
 }
 
-export async function updateFamilyMember(
+export async function updatePartner(
   id: string,
-  updates: FamilyMemberUpdate
-): Promise<FamilyMember | null> {
+  updates: PartnerUpdate
+): Promise<Partner | null> {
   if (isDemoMode()) {
     const store = demoStore();
     const index = store.findIndex((member) => member.id === id);
     if (index < 0) return null;
-    const updated: FamilyMember = {
+    const updated: Partner = {
       ...store[index],
       ...structuredClone(updates),
       id: store[index].id,
@@ -365,7 +365,7 @@ export async function updateFamilyMember(
   const { members } = await readStoredMembers();
   const stored = members.find(({ member }) => member.id === id);
   if (!stored) return null;
-  const updated: FamilyMember = {
+  const updated: Partner = {
     ...stored.member,
     ...updates,
     id: stored.member.id,
@@ -381,7 +381,7 @@ export async function updateFamilyMember(
   return updated;
 }
 
-export async function deleteFamilyMember(id: string): Promise<boolean> {
+export async function deletePartner(id: string): Promise<boolean> {
   if (isDemoMode()) {
     const store = demoStore();
     const index = store.findIndex((member) => member.id === id);

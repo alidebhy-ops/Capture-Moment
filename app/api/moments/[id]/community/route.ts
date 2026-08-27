@@ -10,7 +10,7 @@ import {
   validateCommunityId,
   validateReactionKind,
 } from "@/lib/community";
-import { getFamilyMember } from "@/lib/family";
+import { getPartner } from "@/lib/partners";
 import { getMoment } from "@/lib/moments";
 
 export const runtime = "nodejs";
@@ -90,7 +90,7 @@ export async function POST(
     const authorId = validateCommunityId(input.authorId, "ID penulis");
     const [moment, author] = await Promise.all([
       getMoment(id),
-      getFamilyMember(authorId),
+      getPartner(authorId),
     ]);
     if (!moment) {
       return NextResponse.json(
@@ -179,7 +179,7 @@ export async function DELETE(
     const input = payload as Record<string, unknown>;
     const authorId = validateCommunityId(input.authorId, "ID penulis");
     const commentId = validateCommunityId(input.commentId, "ID komentar");
-    const author = await getFamilyMember(authorId);
+    const author = await getPartner(authorId);
     if (!author) {
       return NextResponse.json(
         { error: "Profil tidak ditemukan." },

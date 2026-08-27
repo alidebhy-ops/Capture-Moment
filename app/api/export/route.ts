@@ -5,7 +5,7 @@ import {
 } from "@/lib/auth";
 import { listTimeCapsules } from "@/lib/capsules";
 import { listAllCommunity } from "@/lib/community";
-import { listFamilyMembers } from "@/lib/family";
+import { listPartners } from "@/lib/partners";
 import { listAllMoments } from "@/lib/moments";
 import { listPlans } from "@/lib/plans";
 import type { Moment } from "@/lib/types";
@@ -105,10 +105,10 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const [moments, plans, familyMembers, timeCapsules, community] = await Promise.all([
+    const [moments, plans, partners, timeCapsules, community] = await Promise.all([
       listAllMoments(),
       listPlans(),
-      listFamilyMembers(),
+      listPartners(),
       listTimeCapsules(),
       listAllCommunity(),
     ]);
@@ -140,7 +140,7 @@ export async function GET(request: NextRequest) {
           0
         ),
         plans: plans.length,
-        familyMembers: familyMembers.length,
+        partners: partners.length,
         timeCapsules: timeCapsules.length,
         comments: community.comments.length,
         reactions: community.reactions.length,
@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
       },
       moments,
       plans,
-      familyMembers,
+      partners,
       timeCapsules,
       community,
     };

@@ -206,7 +206,7 @@ const cachedSheetRows = cache(sheetRows);
 
 // Guards against acting on a row number captured before a concurrent write
 // shifted the sheet. One extra single-cell read is far cheaper than
-// overwriting or deleting the wrong family memory.
+// overwriting or deleting the wrong memory.
 async function assertRowStillMatches(
   sheetRow: number,
   id: string

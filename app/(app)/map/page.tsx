@@ -18,7 +18,7 @@ export default async function MapPage() {
     <div className="map-page">
       <header className="page-header-row">
         <div>
-          <p className="eyebrow">Peta perjalanan keluarga</p>
+          <p className="eyebrow">Peta perjalanan kita</p>
           <h1>Setiap tempat punya cerita.</h1>
           <p>{located.length} momen tersebar dari perjalanan jauh hingga sudut kota yang dekat.</p>
         </div>

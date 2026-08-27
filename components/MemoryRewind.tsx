@@ -260,7 +260,7 @@ export default function MemoryRewind({
       <header className="rewind-header">
         <div>
           <p className="rewind-eyebrow">
-            <Sparkles size={14} /> Kilas balik keluarga
+            <Sparkles size={14} /> Kilas balik kita
           </p>
           <h1>Hari ini di masa lalu.</h1>
           <p>
@@ -477,7 +477,7 @@ export default function MemoryRewind({
           </div>
           <p className="rewind-year-note">
             {yearlySelection.moments.length
-              ? `${yearlySelection.moments.length} cerita membentuk jejak keluarga di ${yearlySelection.year}.`
+              ? `${yearlySelection.moments.length} cerita membentuk jejak kita di ${yearlySelection.year}.`
               : "Belum ada cerita untuk dirangkum pada periode ini."}
           </p>
         </article>

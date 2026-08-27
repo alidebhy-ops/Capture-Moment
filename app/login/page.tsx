@@ -33,16 +33,16 @@ export default function LoginPage() {
 
   return (
     <main className="login-page">
-      <section className="login-visual" aria-label="Cuplikan momen keluarga">
+      <section className="login-visual" aria-label="Cuplikan momen kita">
         <div className="login-collage">
-          <div className="login-photo tall"><img src="/demo/home.jpg" alt="Keluarga menikmati senja di pantai" /><span><ImageIcon size={14} /> Mei 2026</span></div>
+          <div className="login-photo tall"><img src="/demo/home.jpg" alt="Menikmati senja berdua di pantai" /><span><ImageIcon size={14} /> Mei 2026</span></div>
           <div className="login-photo"><img src="/demo/mountain.jpg" alt="Perjalanan ke pegunungan" /></div>
-          <div className="login-photo"><img src="/demo/birthday.jpg" alt="Perayaan bersama keluarga" /><span><Play size={13} fill="currentColor" /> 00:24</span></div>
+          <div className="login-photo"><img src="/demo/birthday.jpg" alt="Perayaan berdua" /><span><Play size={13} fill="currentColor" /> 00:24</span></div>
         </div>
         <div className="login-quote">
           <BookHeart size={25} />
           <blockquote>“Suatu hari, hal-hal kecil hari ini akan menjadi cerita yang paling ingin kita ingat.”</blockquote>
-          <p>Foto, video, tempat, dan cerita—dalam satu ruang keluarga.</p>
+          <p>Foto, video, tempat, dan cerita—dalam satu ruang kita.</p>
         </div>
       </section>
 
@@ -51,13 +51,13 @@ export default function LoginPage() {
           <div className="login-brand"><span className="brand-mark"><BookHeart size={20} /></span><span><strong>Capture</strong>Moment</span></div>
           <div className="login-heading">
             <span className="login-lock"><LockKeyhole size={19} /></span>
-            <p className="eyebrow">Ruang pribadi keluarga</p>
+            <p className="eyebrow">Ruang pribadi antara kita</p>
             <h1>Selamat datang kembali.</h1>
-            <p>Masukkan password keluarga untuk membuka semua kenangan.</p>
+            <p>Masukkan password berdua untuk membuka semua kenangan.</p>
           </div>
 
           <form onSubmit={(event) => { event.preventDefault(); login({ password }, "password"); }} className="login-form">
-            <label htmlFor="password">Password keluarga</label>
+            <label htmlFor="password">Password berdua</label>
             <div className="password-input">
               <LockKeyhole size={18} />
               <input id="password" type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Masukkan password" required autoFocus />
@@ -76,7 +76,7 @@ export default function LoginPage() {
             {loading === "demo" ? <LoaderCircle size={19} className="spin" /> : <ArrowRight size={19} />}
           </button>
 
-          <p className="privacy-note"><LockKeyhole size={13} /> Hanya anggota keluarga yang memiliki akses.</p>
+          <p className="privacy-note"><LockKeyhole size={13} /> Hanya profil yang memiliki akses.</p>
         </div>
       </section>
     </main>

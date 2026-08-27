@@ -98,6 +98,11 @@ export default function SmartInbox() {
   }, [items]);
 
   const duplicateCount = items.filter((item) => item.duplicate).length;
+  // Kalau tidak satu pun foto membawa koordinat, penyebabnya hampir selalu iOS
+  // yang membuangnya kecuali "Options -> Location" dinyalakan saat memilih.
+  const photoCount = items.filter((item) => item.file.type.startsWith("image/")).length;
+  const locatedCount = items.filter((item) => item.lat !== null).length;
+  const missingAllLocations = photoCount > 0 && locatedCount === 0;
 
   async function inspectFiles(selected: File[]) {
     setError("");
@@ -334,6 +339,17 @@ export default function SmartInbox() {
               <ImagePlus size={16} /> Tambah media
             </button>
           </div>
+
+          {missingAllLocations && (
+            <div className="inbox-location-note">
+              <MapPin size={16} />
+              <span>
+                Tidak ada foto yang membawa data lokasi. Di iPhone, ketuk{" "}
+                <strong>Options</strong> di layar pemilih foto lalu nyalakan{" "}
+                <strong>Location</strong> sebelum memilih.
+              </span>
+            </div>
+          )}
 
           {duplicateCount > 0 && (
             <div className="inbox-duplicate-note">

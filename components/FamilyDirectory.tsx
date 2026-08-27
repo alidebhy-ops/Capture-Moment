@@ -9,8 +9,6 @@ import {
   LoaderCircle,
   Pencil,
   Plus,
-  Search,
-  ShieldCheck,
   Trash2,
   UserRound,
   UsersRound,
@@ -20,7 +18,6 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { formatDateID } from "@/lib/format";
 import { coverThumbSrc } from "@/lib/media";
 import {
-  FAMILY_ROLES,
   type FamilyMember,
   type FamilyMemberDraft,
 } from "@/lib/family-types";
@@ -32,12 +29,6 @@ type FamilyDirectoryProps = {
 };
 
 type MemberForm = FamilyMemberDraft;
-
-const ROLE_LABELS = {
-  admin: "Pengelola",
-  contributor: "Pencerita",
-  viewer: "Pembaca",
-} as const;
 
 const AVATAR_COLORS = [
   "#a8573d",
@@ -62,7 +53,6 @@ function emptyForm(): MemberForm {
     name: "",
     initials: "",
     relationship: "",
-    role: "contributor",
     bio: "",
     birthday: "",
     color: AVATAR_COLORS[0],
@@ -75,7 +65,6 @@ function formFromMember(member: FamilyMember): MemberForm {
     name: member.name,
     initials: member.initials,
     relationship: member.relationship,
-    role: member.role,
     bio: member.bio,
     birthday: member.birthday,
     color: member.color,
@@ -104,7 +93,6 @@ export default function FamilyDirectory({
   moments,
 }: FamilyDirectoryProps) {
   const [members, setMembers] = useState(initialMembers);
-  const [query, setQuery] = useState("");
   const [editing, setEditing] = useState<FamilyMember | null>(null);
   const [form, setForm] = useState<MemberForm>(emptyForm);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -113,16 +101,6 @@ export default function FamilyDirectory({
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
 
-  const filtered = useMemo(() => {
-    const needle = query.trim().toLocaleLowerCase("id-ID");
-    if (!needle) return members;
-    return members.filter((member) =>
-      [member.name, member.relationship, member.bio, ROLE_LABELS[member.role]]
-        .join(" ")
-        .toLocaleLowerCase("id-ID")
-        .includes(needle)
-    );
-  }, [members, query]);
 
   const contributions = useMemo(
     () =>
@@ -169,15 +147,6 @@ export default function FamilyDirectory({
     setForm((current) => ({ ...current, [key]: value }));
   }
 
-  function toggleMoment(momentId: string) {
-    setForm((current) => ({
-      ...current,
-      momentIds: current.momentIds.includes(momentId)
-        ? current.momentIds.filter((id) => id !== momentId)
-        : [...current.momentIds, momentId],
-    }));
-  }
-
   async function saveMember(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (saving) return;
@@ -217,7 +186,7 @@ export default function FamilyDirectory({
       setNotice(
         editing
           ? `Profil ${saved.name} diperbarui.`
-          : `${saved.name} bergabung dalam ruang keluarga.`
+          : `${saved.name} bergabung dalam ruang kita.`
       );
     } catch (caught) {
       setError(
@@ -266,11 +235,11 @@ export default function FamilyDirectory({
           <p className="family-eyebrow">Lingkaran terdekat</p>
           <h1 id="family-directory-title">Orang-orang di setiap cerita</h1>
           <p>
-            Hubungkan momen dengan anggota keluarga, lalu lihat perjalanan
+            Hubungkan momen dengan profil, lalu lihat perjalanan
             mereka tumbuh menjadi linimasa pribadi.
           </p>
         </div>
-        <div className="family-summary-stats" aria-label="Ringkasan keluarga">
+        <div className="family-summary-stats" aria-label="Ringkasan kita">
           <div>
             <UsersRound size={20} />
             <strong>{members.length}</strong>
@@ -285,19 +254,9 @@ export default function FamilyDirectory({
       </div>
 
       <div className="family-toolbar">
-        <label className="family-search">
-          <Search size={18} />
-          <span className="family-sr-only">Cari anggota keluarga</span>
-          <input
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Cari nama, hubungan, atau cerita..."
-          />
-        </label>
         <button type="button" className="family-add-button" onClick={openCreate}>
           <Plus size={18} />
-          Tambah anggota
+          Tambah profil
         </button>
       </div>
 
@@ -320,9 +279,9 @@ export default function FamilyDirectory({
         </div>
       )}
 
-      {filtered.length ? (
+      {members.length ? (
         <div className="family-grid">
-          {filtered.map((member) => {
+          {members.map((member) => {
             const memberMoments = moments
               .filter(
                 (moment) =>
@@ -343,12 +302,8 @@ export default function FamilyDirectory({
                   </span>
                   <div className="family-card-identity">
                     <h2>{member.name}</h2>
-                    <p>{member.relationship || "Anggota keluarga"}</p>
+                    <p>{member.relationship || "Profil kita"}</p>
                   </div>
-                  <span className={`family-role family-role-${member.role}`}>
-                    {member.role === "admin" && <ShieldCheck size={13} />}
-                    {ROLE_LABELS[member.role]}
-                  </span>
                 </div>
 
                 <p className="family-card-bio">
@@ -420,7 +375,7 @@ export default function FamilyDirectory({
         <div className="family-empty">
           <UserRound size={28} />
           <h2>Tidak ada profil yang cocok</h2>
-          <p>Ubah kata pencarian atau tambahkan anggota keluarga baru.</p>
+          <p>Ubah kata pencarian atau tambahkan profil baru.</p>
         </div>
       )}
 
@@ -442,7 +397,7 @@ export default function FamilyDirectory({
           >
             <header className="family-dialog-header">
               <div>
-                <p className="family-eyebrow">Profil keluarga</p>
+                <p className="family-eyebrow">Profil kita</p>
                 <h2 id="family-dialog-title">
                   {editing ? "Perbarui anggota" : "Tambahkan wajah baru"}
                 </h2>
@@ -495,24 +450,6 @@ export default function FamilyDirectory({
                   />
                 </label>
                 <label className="family-field">
-                  <span>Peran di ruang keluarga</span>
-                  <select
-                    value={form.role}
-                    onChange={(event) =>
-                      updateForm(
-                        "role",
-                        event.target.value as MemberForm["role"]
-                      )
-                    }
-                  >
-                    {FAMILY_ROLES.map((role) => (
-                      <option key={role} value={role}>
-                        {ROLE_LABELS[role]}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="family-field">
                   <span>Tanggal lahir</span>
                   <input
                     type="date"
@@ -544,58 +481,11 @@ export default function FamilyDirectory({
                     maxLength={600}
                     value={form.bio}
                     onChange={(event) => updateForm("bio", event.target.value)}
-                    placeholder="Apa yang membuat anggota ini istimewa di dalam keluarga?"
+                    placeholder="Apa yang membuat dia istimewa buatmu?"
                   />
                 </label>
               </div>
 
-              <fieldset className="family-moment-picker">
-                <legend>Muncul dalam momen</legend>
-                <p>
-                  Pilih cerita yang melibatkan anggota ini untuk membentuk
-                  linimasa pribadinya.
-                </p>
-                <div>
-                  {moments.map((moment) => {
-                    const linkedFromMoment = Boolean(
-                      editing &&
-                        moment.peopleIds?.includes(editing.id) &&
-                        !form.momentIds.includes(moment.id)
-                    );
-                    return (
-                      <label
-                        key={moment.id}
-                        className={
-                          linkedFromMoment ? "family-moment-locked" : undefined
-                        }
-                        title={
-                          linkedFromMoment
-                            ? "Tautan ini dikelola dari halaman edit momen."
-                            : undefined
-                        }
-                      >
-                        <input
-                          type="checkbox"
-                          checked={
-                            form.momentIds.includes(moment.id) ||
-                            linkedFromMoment
-                          }
-                          disabled={linkedFromMoment}
-                          onChange={() => toggleMoment(moment.id)}
-                        />
-                        <span>
-                          <strong>{moment.title}</strong>
-                          <small>
-                            {linkedFromMoment
-                              ? "Ditautkan dari momen"
-                              : formatDateID(moment.date)}
-                          </small>
-                        </span>
-                      </label>
-                    );
-                  })}
-                </div>
-              </fieldset>
 
               {error && <p className="family-form-error">{error}</p>}
               <footer className="family-dialog-actions">

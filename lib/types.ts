@@ -71,7 +71,7 @@ export const PLAN_PRIORITIES = ["low", "medium", "high"] as const;
 export const PLAN_CATEGORIES = [
   "Perjalanan",
   "Perayaan",
-  "Keluarga",
+  "Kencan",
   "Proyek",
   "Kuliner",
 ] as const;

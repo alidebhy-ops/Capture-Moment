@@ -18,7 +18,7 @@ export const themeAccents = [
   {
     id: "sage",
     label: "Sage",
-    description: "Tenang dan natural untuk cerita keluarga.",
+    description: "Tenang dan natural untuk cerita kita.",
     colors: {
       accent: "#5c745e",
       deep: "#405b44",

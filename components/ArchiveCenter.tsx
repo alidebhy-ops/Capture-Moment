@@ -249,7 +249,7 @@ export default function ArchiveCenter({
         <div className="archive-hero-copy">
           <p className="archive-eyebrow">
             <ArchiveRestore size={15} />
-            Pusat arsip keluarga
+            Pusat arsip kita
           </p>
           <h1>Jaga cerita tetap utuh, mudah ditemukan, dan bisa dibawa.</h1>
           <p>
@@ -318,7 +318,7 @@ export default function ArchiveCenter({
               <Download size={15} />
               Backup mandiri
             </p>
-            <h2>Bawa pulang salinan data keluarga</h2>
+            <h2>Bawa pulang salinan data kita</h2>
           </div>
           <span className="backup-ready">
             <CheckCircle2 size={15} />
@@ -395,7 +395,7 @@ export default function ArchiveCenter({
           <strong>{activePlans.length} rencana aktif</strong>
           <p>
             {plans.length - activePlans.length} rencana telah selesai dan
-            tersimpan sebagai bagian perjalanan keluarga.
+            tersimpan sebagai bagian perjalanan kita.
           </p>
         </article>
         <article className="archive-health-card">
@@ -442,7 +442,7 @@ export default function ArchiveCenter({
         <section className="archive-list-card">
           <div className="archive-list-heading">
             <div>
-              <p className="archive-eyebrow">Pilihan keluarga</p>
+              <p className="archive-eyebrow">Pilihan kita</p>
               <h2>Favorit</h2>
             </div>
             <span>{favoriteMoments.length}</span>

@@ -2,20 +2,21 @@ import { cache } from "react";
 import { demoFamilyMembers } from "./demo-family";
 import { isDemoMode } from "./demo";
 import {
-  FAMILY_ROLES,
   type FamilyMember,
   type FamilyMemberDraft,
   type FamilyMemberUpdate,
-  type FamilyRole,
 } from "./family-types";
 import { getSheetId, getSheets } from "./google";
+
+// Kolom keempat dulu menyimpan peran anggota. Konsep peran sudah dibuang, tetapi
+// kolomnya dipertahankan agar baris lama tidak bergeser posisinya.
+const LEGACY_ROLE_CELL = "-";
 import { ensureTabOnce } from "./sheet-setup";
 
 export type {
   FamilyMember,
   FamilyMemberDraft,
   FamilyMemberUpdate,
-  FamilyRole,
 } from "./family-types";
 
 const SHEET_TITLE = "Members";
@@ -57,14 +58,6 @@ function textField(
     );
   }
   return result;
-}
-
-function roleField(value: unknown): FamilyRole {
-  const role = String(value ?? "contributor").trim();
-  if (!(FAMILY_ROLES as readonly string[]).includes(role)) {
-    throw new FamilyValidationError("Peran anggota tidak valid.");
-  }
-  return role as FamilyRole;
 }
 
 function dateField(value: unknown): string {
@@ -150,10 +143,9 @@ export function validateFamilyMemberDraft(
         .join(""),
     relationship: textField(
       payload.relationship ?? payload.relation,
-      "Hubungan keluarga",
+      "Panggilan",
       80
     ),
-    role: roleField(payload.role),
     bio: textField(payload.bio, "Cerita singkat", 600),
     birthday: dateField(payload.birthday),
     color: avatarColorField(payload.color ?? payload.avatarColor),
@@ -173,10 +165,6 @@ function demoStore(): FamilyMember[] {
   return globalThis.captureMomentDemoFamilyMembers;
 }
 
-function isFamilyRole(value: string): value is FamilyRole {
-  return (FAMILY_ROLES as readonly string[]).includes(value);
-}
-
 function cell(row: unknown[], index: number): string {
   return String(row[index] ?? "").trim();
 }
@@ -189,7 +177,6 @@ function rowToMember(row: unknown[]): FamilyMember | null {
     name: cell(row, 1),
     initials: cell(row, 2),
     relationship: cell(row, 3),
-    role: isFamilyRole(cell(row, 4)) ? cell(row, 4) as FamilyRole : "contributor",
     bio: cell(row, 5),
     birthday: cell(row, 6),
     color: /^#[0-9a-f]{6}$/i.test(cell(row, 7))
@@ -210,7 +197,7 @@ function memberToRow(member: FamilyMember): string[] {
     member.name,
     member.initials,
     member.relationship,
-    member.role,
+    LEGACY_ROLE_CELL,
     member.bio,
     member.birthday,
     member.color,
@@ -222,16 +209,7 @@ function memberToRow(member: FamilyMember): string[] {
 }
 
 function sortMembers(members: FamilyMember[]): FamilyMember[] {
-  const order: Record<FamilyRole, number> = {
-    admin: 0,
-    contributor: 1,
-    viewer: 2,
-  };
-  return members.sort(
-    (a, b) =>
-      order[a.role] - order[b.role] ||
-      a.name.localeCompare(b.name, "id-ID")
-  );
+  return members.sort((a, b) => a.name.localeCompare(b.name, "id-ID"));
 }
 
 async function findMembersSheet() {

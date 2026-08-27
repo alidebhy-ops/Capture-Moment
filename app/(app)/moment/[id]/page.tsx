@@ -37,8 +37,7 @@ export default async function MomentDetailPage({ params }: PageProps<"/moment/[i
     .slice(0, 2);
   const hasLocation = moment.lat !== null && moment.lng !== null;
   const author =
-    members.find((member) => member.id === moment.authorId) ||
-    members.find((member) => member.role === "admin");
+    members.find((member) => member.id === moment.authorId) || members[0];
   const people = members.filter(
     (member) =>
       moment.peopleIds?.includes(member.id) ||
@@ -94,7 +93,7 @@ export default async function MomentDetailPage({ params }: PageProps<"/moment/[i
             <span className="author-avatar" style={author ? { background: author.color } : undefined}>{author?.initials || "MA"}</span>
             <div>
               <strong>Diceritakan oleh {author?.name || "Akbar"}</strong>
-              <p>{author?.relationship || "Untuk keluarga, selamanya."}</p>
+              <p>{author?.relationship || "Untuk kita, selamanya."}</p>
             </div>
           </div>
         </aside>

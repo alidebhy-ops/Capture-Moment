@@ -36,7 +36,7 @@ export default async function PhotoBookPage({
       <header className="photobook-toolbar">
         <div>
           <Link href="/archive" className="back-link"><ArrowLeft size={16} /> Kembali ke pusat arsip</Link>
-          <p className="eyebrow">Buku keluarga siap cetak</p>
+          <p className="eyebrow">Buku kita siap cetak</p>
           <h1>Photobook {selectedYear || "Keluarga"}</h1>
           <p>{moments.length} cerita disusun menjadi halaman yang nyaman dibaca dan dicetak.</p>
         </div>
@@ -58,7 +58,7 @@ export default async function PhotoBookPage({
         <section className="photobook-cover">
           <span><BookOpen size={32} /></span>
           <p>CaptureMoment mempersembahkan</p>
-          <h2>Cerita Keluarga<br />{selectedYear}</h2>
+          <h2>Cerita Kita<br />{selectedYear}</h2>
           <small>{moments.length} momen · dibuat untuk selalu dibuka kembali</small>
         </section>
 

@@ -139,7 +139,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       )}
 
       {upcomingPlan && (
-        <section className="plan-spotlight" aria-label="Rencana keluarga terdekat">
+        <section className="plan-spotlight" aria-label="Rencana terdekat">
           <div className="plan-spotlight-icon"><ListTodo size={23} /></div>
           <div className="plan-spotlight-copy">
             <p className="eyebrow">Rencana terdekat</p>
@@ -160,11 +160,11 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       <section className="feature-launcher" aria-labelledby="feature-launcher-title">
         <div className="section-heading-row">
           <div>
-            <p className="eyebrow">Ruang keluarga</p>
+            <p className="eyebrow">Ruang kita</p>
             <h2 id="feature-launcher-title">Lebih dari sekadar album</h2>
           </div>
           <p className="feature-launcher-intro">
-            Hidupkan kembali cerita, siapkan hari berikutnya, dan rawat arsip keluarga bersama.
+            Hidupkan kembali cerita, siapkan hari berikutnya, dan rawat arsip kita berdua.
           </p>
         </div>
         <div className="feature-launcher-grid">
@@ -179,7 +179,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           <Link href="/calendar" className="feature-launcher-card">
             <span><CalendarDays size={20} /></span>
             <div>
-              <strong>Kalender keluarga</strong>
+              <strong>Kalender kita</strong>
               <p>Momen, rencana, dan kapsul dalam satu kalender.</p>
             </div>
             <ArrowRight size={17} />
@@ -188,7 +188,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             <span><UsersRound size={20} /></span>
             <div>
               <strong>People Timeline</strong>
-              <p>Lihat kisah dari sudut setiap anggota keluarga.</p>
+              <p>Lihat kisah dari sudut setiap profil.</p>
             </div>
             <ArrowRight size={17} />
           </Link>

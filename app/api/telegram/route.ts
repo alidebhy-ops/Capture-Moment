@@ -38,7 +38,7 @@ const LOCATION_ATTACH_WINDOW_MS = 20 * 60 * 1000;
 const HELP_TEXT = [
   "<b>CaptureMoment</b>",
   "",
-  "Kirim foto atau video dengan caption, dan momen langsung tersimpan di album keluarga.",
+  "Kirim foto atau video dengan caption, dan momen langsung tersimpan di album kita.",
   "",
   "• Baris pertama caption menjadi judul, sisanya menjadi cerita.",
   "• Kirim beberapa foto sekaligus untuk menggabungkannya jadi satu momen.",
@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
   if (!isAllowedChat(chatId)) {
     await sendMessage(
       chatId,
-      `Bot ini khusus untuk album keluarga. ID chat kamu: <code>${chatId}</code>`
+      `Bot ini khusus untuk album kita. ID chat kamu: <code>${chatId}</code>`
     ).catch(() => undefined);
     return NextResponse.json({ ok: true });
   }

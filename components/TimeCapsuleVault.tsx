@@ -58,7 +58,7 @@ const THEME_META: Record<
   },
   harapan: {
     label: "Harapan",
-    description: "Doa dan mimpi keluarga",
+    description: "Doa dan mimpi kita",
     icon: <Sparkles size={18} />,
   },
   perayaan: {
@@ -66,9 +66,9 @@ const THEME_META: Record<
     description: "Kejutan untuk hari istimewa",
     icon: <Gift size={18} />,
   },
-  warisan: {
-    label: "Warisan",
-    description: "Nilai dan cerita lintas generasi",
+  janji: {
+    label: "Janji",
+    description: "Hal yang ingin kita tepati bersama",
     icon: <Heart size={18} />,
   },
 };
@@ -352,7 +352,7 @@ export default function TimeCapsuleVault({
       <header className="capsule-hero">
         <div className="capsule-hero-copy">
           <p className="capsule-eyebrow">
-            <Sparkles size={14} /> Kapsul waktu keluarga
+            <Sparkles size={14} /> Surat untuk nanti
           </p>
           <h1>Titipkan pesan kepada masa depan.</h1>
           <p>
@@ -401,7 +401,7 @@ export default function TimeCapsuleVault({
               : "Belum ada"}
           </strong>
           <small>
-            {stats.next?.title ?? "Buat kapsul pertama untuk keluarga"}
+            {stats.next?.title ?? "Buat kapsul pertama untuk kita"}
           </small>
         </div>
       </section>
@@ -429,7 +429,7 @@ export default function TimeCapsuleVault({
       <section className="capsule-vault" aria-labelledby="capsule-vault-title">
         <div className="capsule-section-heading">
           <div>
-            <p className="capsule-eyebrow">Brankas keluarga</p>
+            <p className="capsule-eyebrow">Brankas kita</p>
             <h2 id="capsule-vault-title">Pesan yang sedang menunggu.</h2>
           </div>
           <span>{capsules.length} kapsul</span>
@@ -492,7 +492,7 @@ export default function TimeCapsuleVault({
                         </dt>
                         <dd>
                           {capsule.recipientMemberIds.join(", ") ||
-                            "Seluruh keluarga"}
+                            "Kita berdua"}
                         </dd>
                       </div>
                     </dl>
@@ -590,7 +590,7 @@ export default function TimeCapsuleVault({
                     required
                     maxLength={120}
                     value={form.title}
-                    placeholder="Contoh: Untuk Nara di ulang tahun ke-18"
+                    placeholder="Contoh: Untuk kita lima tahun lagi"
                     onChange={(event) =>
                       setForm((current) => ({
                         ...current,
@@ -673,7 +673,7 @@ export default function TimeCapsuleVault({
                   <input
                     maxLength={1_600}
                     value={form.recipients}
-                    placeholder="Nara, Kakak, Seluruh keluarga"
+                    placeholder="Nara, Kakak, Kita berdua"
                     onChange={(event) =>
                       setForm((current) => ({
                         ...current,

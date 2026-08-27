@@ -15,7 +15,6 @@ const MUTABLE_FIELDS = [
   "name",
   "initials",
   "relationship",
-  "role",
   "bio",
   "birthday",
   "color",
@@ -55,7 +54,7 @@ export async function GET(
     return NextResponse.json({ member });
   } catch (error) {
     return NextResponse.json(
-      { error: message(error, "Gagal membaca anggota keluarga.") },
+      { error: message(error, "Gagal membaca profil.") },
       { status: 500 }
     );
   }
@@ -112,7 +111,6 @@ export async function PATCH(
       name: existing.name,
       initials: existing.initials,
       relationship: existing.relationship,
-      role: existing.role,
       bio: existing.bio,
       birthday: existing.birthday,
       color: existing.color,
@@ -133,7 +131,7 @@ export async function PATCH(
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
     return NextResponse.json(
-      { error: message(error, "Gagal memperbarui anggota keluarga.") },
+      { error: message(error, "Gagal memperbarui profil.") },
       { status: 500 }
     );
   }
@@ -161,7 +159,7 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json(
-      { error: message(error, "Gagal menghapus anggota keluarga.") },
+      { error: message(error, "Gagal menghapus profil.") },
       { status: 500 }
     );
   }

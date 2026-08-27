@@ -15,7 +15,7 @@ import {
   Edit3,
   Flag,
   Heart,
-  HouseHeart,
+  HeartHandshake,
   ListChecks,
   LoaderCircle,
   MapPin,
@@ -25,7 +25,6 @@ import {
   Search,
   Sparkles,
   Trash2,
-  Users,
   UtensilsCrossed,
   Wallet,
   X,
@@ -51,7 +50,7 @@ const STATUS_OPTIONS: Array<{ value: PlanStatus; label: string; shortLabel: stri
 const CATEGORY_OPTIONS: Array<{ value: PlanCategory; label: string }> = [
   { value: "Perjalanan", label: "Perjalanan" },
   { value: "Perayaan", label: "Perayaan" },
-  { value: "Keluarga", label: "Keluarga" },
+  { value: "Kencan", label: "Kencan" },
   { value: "Proyek", label: "Proyek kenangan" },
   { value: "Kuliner", label: "Kuliner" },
 ];
@@ -78,7 +77,6 @@ type PlanFormState = {
   locationName: string;
   estimatedBudget: string;
   savedAmount: string;
-  participants: string;
   checklist: string;
   notes: string;
 };
@@ -95,7 +93,6 @@ const EMPTY_FORM: PlanFormState = {
   locationName: "",
   estimatedBudget: "",
   savedAmount: "",
-  participants: "",
   checklist: "",
   notes: "",
 };
@@ -123,7 +120,7 @@ function readinessScore(plan: Plan) {
   const savingScore = plan.estimatedBudget
     ? progressPercent(plan.savedAmount, plan.estimatedBudget) * 0.3
     : 20;
-  const detailScore = [plan.targetDate, plan.locationName, plan.participants.length > 0].filter(Boolean).length * (20 / 3);
+  const detailScore = [plan.targetDate, plan.locationName].filter(Boolean).length * 10;
   return Math.min(99, Math.round(checklistScore + savingScore + detailScore));
 }
 
@@ -157,7 +154,6 @@ function planToForm(plan: Plan): PlanFormState {
     locationName: plan.locationName,
     estimatedBudget: plan.estimatedBudget ? String(plan.estimatedBudget) : "",
     savedAmount: plan.savedAmount ? String(plan.savedAmount) : "",
-    participants: plan.participants.join(", "),
     checklist: plan.checklist.map((item) => item.label).join("\n"),
     notes: plan.notes,
   };
@@ -201,7 +197,7 @@ async function responseMessage(response: Response) {
 function CategoryIcon({ category }: { category: PlanCategory }) {
   if (category === "Perjalanan") return <Plane size={20} />;
   if (category === "Perayaan") return <CakeSlice size={20} />;
-  if (category === "Keluarga") return <HouseHeart size={20} />;
+  if (category === "Kencan") return <HeartHandshake size={20} />;
   if (category === "Kuliner") return <UtensilsCrossed size={20} />;
   return <NotebookTabs size={20} />;
 }
@@ -289,9 +285,6 @@ function PlanCard({
           <span>{plan.targetDate ? formatDateID(plan.targetDate) : "Belum bertanggal"}<small>{targetHint(plan)}</small></span>
         </span>
         {plan.locationName && <span><MapPin size={15} /><span>{plan.locationName}</span></span>}
-        {plan.participants.length > 0 && (
-          <span><Users size={15} /><span>{plan.participants.slice(0, 2).join(", ")}{plan.participants.length > 2 ? ` +${plan.participants.length - 2}` : ""}</span></span>
-        )}
       </div>
 
       {plan.estimatedBudget > 0 && (
@@ -426,7 +419,7 @@ function PlanDialog({
                 type="text"
                 value={form.title}
                 onChange={(event) => update("title", event.target.value)}
-                placeholder="Contoh: Road trip keluarga ke Toraja"
+                placeholder="Contoh: Road trip berdua ke Toraja"
                 maxLength={100}
                 required
                 autoFocus
@@ -485,10 +478,6 @@ function PlanDialog({
               <div className="plan-input-prefix"><span>Rp</span><input type="number" min="0" step="1000" inputMode="numeric" value={form.savedAmount} onChange={(event) => update("savedAmount", event.target.value)} placeholder="0" /></div>
             </label>
 
-            <label className="plan-field plan-field-wide">
-              <span>Orang yang ikut</span>
-              <div className="plan-input-icon"><Users size={17} /><input type="text" value={form.participants} onChange={(event) => update("participants", event.target.value)} placeholder="Ayah, Ibu, Kak Rani (pisahkan dengan koma)" maxLength={300} /></div>
-            </label>
 
             <label className="plan-field plan-field-wide">
               <span>Checklist persiapan <small>satu langkah per baris</small></span>
@@ -558,7 +547,7 @@ export default function PlanBoard({ initialPlans }: { initialPlans: Plan[] }) {
     const needle = query.trim().toLocaleLowerCase("id");
     return plans.filter((plan) => {
       const sameStatus = statusFilter === "all" || plan.status === statusFilter;
-      const haystack = [plan.title, plan.description, plan.category, plan.locationName, ...plan.participants]
+      const haystack = [plan.title, plan.description, plan.category, plan.locationName]
         .join(" ")
         .toLocaleLowerCase("id");
       return sameStatus && (!needle || haystack.includes(needle));
@@ -584,7 +573,7 @@ export default function PlanBoard({ initialPlans }: { initialPlans: Plan[] }) {
       lng: editingPlan?.lng ?? null,
       estimatedBudget: Math.max(0, Number(form.estimatedBudget) || 0),
       savedAmount: Math.max(0, Number(form.savedAmount) || 0),
-      participants: form.participants.split(",").map((item) => item.trim()).filter(Boolean).slice(0, 20),
+      participants: [],
       checklist: createChecklist(form.checklist, editingPlan?.checklist),
       notes: form.notes.trim(),
     };
@@ -678,7 +667,7 @@ export default function PlanBoard({ initialPlans }: { initialPlans: Plan[] }) {
           <span className="plan-hero-icon"><Compass size={24} /></span>
           <p className="eyebrow">Dari harapan menjadi kenangan</p>
           <h1>Wishlist &amp; Rencana</h1>
-          <p>Simpan tempat yang ingin dikunjungi, acara yang ingin dirayakan, dan mimpi keluarga yang ingin diwujudkan bersama.</p>
+          <p>Simpan tempat yang ingin dikunjungi, acara yang ingin dirayakan, dan mimpi yang ingin kalian wujudkan bersama.</p>
           <button type="button" className="primary-button" onClick={openCreate}><Plus size={17} /> Buat rencana</button>
         </div>
         <div className="plan-hero-note" aria-label="Pengingat perencanaan">
@@ -749,7 +738,7 @@ export default function PlanBoard({ initialPlans }: { initialPlans: Plan[] }) {
         ) : (
           <div className="plan-empty-state plan-empty-first">
             <span><Heart size={28} /></span>
-            <h3>Wishlist keluarga masih kosong</h3>
+            <h3>Wishlist kita masih kosong</h3>
             <p>Mulai dari perjalanan impian, perayaan kecil, atau proyek album yang sudah lama dibicarakan.</p>
             <button type="button" className="primary-button" onClick={openCreate}><Plus size={17} /> Buat rencana pertama</button>
           </div>

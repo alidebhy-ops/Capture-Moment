@@ -245,7 +245,7 @@ export default function FamilyCalendar({
       <header className="family-calendar-header">
         <div>
           <p className="family-calendar-eyebrow">
-            <Sparkles size={14} /> Kalender keluarga
+            <Sparkles size={14} /> Kalender kita
           </p>
           <h1>Masa lalu dan rencana, dalam satu garis waktu.</h1>
           <p>

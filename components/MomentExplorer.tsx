@@ -187,7 +187,7 @@ export default function MomentExplorer({ moments, initialCollection = "Semua" }:
     <section className="explorer-section" aria-labelledby="all-memories-heading">
       <div className="section-heading-row">
         <div>
-          <p className="eyebrow">Arsip keluarga</p>
+          <p className="eyebrow">Arsip kita</p>
           <h2 id="all-memories-heading">Semua momen</h2>
           <p>{filtered.length} cerita ditemukan</p>
         </div>

@@ -8,7 +8,6 @@ import {
   ChevronRight,
   Clock3,
   FolderHeart,
-  ShieldCheck,
   Sparkles,
 } from "lucide-react";
 import { getFamilyMember } from "@/lib/family";
@@ -17,12 +16,6 @@ import { coverThumbSrc } from "@/lib/media";
 import { listMoments } from "@/lib/moments";
 
 export const dynamic = "force-dynamic";
-
-const ROLE_LABELS = {
-  admin: "Pengelola keluarga",
-  contributor: "Pencerita keluarga",
-  viewer: "Pembaca keluarga",
-} as const;
 
 function yearsBetween(start: string, end: string): number {
   const first = Number(start.slice(0, 4));
@@ -75,16 +68,12 @@ export default async function PersonTimelinePage({
         </span>
         <div className="people-profile-copy">
           <div className="people-profile-kicker">
-            <span>{member.relationship || "Anggota keluarga"}</span>
-            <span>
-              {member.role === "admin" && <ShieldCheck size={13} />}
-              {ROLE_LABELS[member.role]}
-            </span>
+            <span>{member.relationship || "Profil kita"}</span>
           </div>
           <h1>{member.name}</h1>
           <p>
             {member.bio ||
-              "Setiap momen bersama adalah satu halaman kecil dalam sejarah keluarga."}
+              "Setiap momen bersama adalah satu halaman kecil dalam cerita panjang kita."}
           </p>
         </div>
         <dl className="people-profile-facts">

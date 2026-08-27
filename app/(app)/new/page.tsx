@@ -18,7 +18,7 @@ export default async function NewMomentPage({
     <div className="new-page">
       <header className="page-header-row new-header">
         <div>
-          <p className="eyebrow">{initialPlan ? "Rencana yang menjadi nyata" : "Tambahkan ke ruang keluarga"}</p>
+          <p className="eyebrow">{initialPlan ? "Rencana yang menjadi nyata" : "Tambahkan ke ruang kita"}</p>
           <h1>{initialPlan ? "Ubah rencana menjadi kenangan." : "Abadikan momen baru."}</h1>
           <p>{initialPlan ? "Lengkapi cerita dan media; rencana akan ditandai selesai setelah momen tersimpan." : "Satukan media, tempat, dan cerita sebelum detail kecilnya terlupakan."}</p>
         </div>

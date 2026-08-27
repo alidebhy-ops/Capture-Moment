@@ -19,7 +19,7 @@ export async function GET() {
     return NextResponse.json({ members: await listFamilyMembers() });
   } catch (error) {
     return NextResponse.json(
-      { error: message(error, "Gagal membaca anggota keluarga.") },
+      { error: message(error, "Gagal membaca profil.") },
       { status: 500 }
     );
   }
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
     return NextResponse.json(
-      { error: message(error, "Gagal menambahkan anggota keluarga.") },
+      { error: message(error, "Gagal menambahkan profil.") },
       { status: 500 }
     );
   }

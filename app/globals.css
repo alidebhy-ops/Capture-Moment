@@ -668,6 +668,9 @@ img, video { display: block; }
 .add-more-media { display: grid; place-items: center; align-content: center; gap: 4px; border: 1px dashed var(--line-strong); background: var(--surface-muted); color: var(--ink-soft); font-size: 0.62rem; }
 .exif-note, .coordinates { display: flex; align-items: center; gap: 6px; color: var(--sage); font-size: 0.67rem; }
 .exif-note { margin: 10px 0; }
+.exif-hint { display: flex; align-items: flex-start; gap: 7px; margin: 10px 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface-subtle); color: var(--ink-soft); font-size: 0.67rem; line-height: 1.6; }
+.exif-hint > svg { flex: 0 0 auto; margin-top: 2px; color: var(--accent); }
+.exif-hint strong { color: var(--ink); }
 .location-picker-wrap { margin-top: 14px; }
 .coordinates { justify-content: space-between; margin-top: 8px; }
 .coordinates button { margin-left: auto; border: 0; background: transparent; color: var(--accent); font-size: 0.64rem; font-weight: 700; }
@@ -730,7 +733,7 @@ img, video { display: block; }
 .plan-card-topline { display: flex; align-items: center; gap: 10px; }
 .plan-category-icon { display: grid; width: 39px; height: 39px; flex: 0 0 39px; place-items: center; border-radius: 12px; background: var(--accent-soft); color: var(--accent-deep); }
 .plan-category-perayaan, .plan-category-kuliner { background: var(--warning-soft); color: var(--warning-ink); }
-.plan-category-keluarga { background: var(--sage-soft); color: var(--sage); }
+.plan-category-kencan { background: var(--sage-soft); color: var(--sage); }
 .plan-category-proyek { background: var(--surface-muted); color: var(--ink-soft); }
 .plan-card-labels { display: flex; min-width: 0; flex-wrap: wrap; gap: 6px; }
 .plan-status, .plan-priority { display: inline-flex; min-height: 24px; align-items: center; gap: 4px; padding: 0 8px; border-radius: 999px; font-size: .56rem; font-weight: 780; }

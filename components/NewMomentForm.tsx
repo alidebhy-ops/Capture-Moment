@@ -74,7 +74,7 @@ function todayISO() {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
-const collections = ["Cerita Sehari-hari", "Perjalanan", "Liburan Keluarga", "Perayaan", "Hari Istimewa"];
+const collections = ["Cerita Sehari-hari", "Perjalanan", "Liburan Berdua", "Perayaan", "Hari Istimewa"];
 const moods = ["Hangat", "Gembira", "Tenang", "Takjub", "Seru", "Damai"];
 const storyPrompts = [
   "Siapa saja yang ada di sana?",
@@ -88,7 +88,7 @@ function collectionForPlan(plan?: Plan) {
   if (!plan) return collections[0];
   if (plan.category === "Perjalanan") return "Perjalanan";
   if (plan.category === "Perayaan") return "Perayaan";
-  if (plan.category === "Keluarga") return "Liburan Keluarga";
+  if (plan.category === "Kencan") return "Liburan Berdua";
   return "Cerita Sehari-hari";
 }
 
@@ -121,7 +121,7 @@ function initialDraftFields(
         : ""),
     authorId:
       initialMoment?.authorId ??
-      members.find((member) => member.role !== "viewer")?.id ??
+      members[0]?.id ??
       "",
     peopleIds: initialMoment?.peopleIds ?? [],
   };
@@ -174,6 +174,7 @@ export default function NewMomentForm({
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [error, setError] = useState("");
   const [exifNote, setExifNote] = useState("");
+  const [exifHint, setExifHint] = useState(false);
   const [draftCandidate, setDraftCandidate] = useState<DraftPayload | null>(null);
   const [lastDraftAt, setLastDraftAt] = useState("");
   const [listening, setListening] = useState(false);
@@ -366,9 +367,11 @@ export default function NewMomentForm({
     ]);
 
     if (lat === null) {
+      const images = selected.filter((item) => item.type.startsWith("image/"));
+      let found = false;
       try {
         const exifr = (await import("exifr")).default;
-        for (const file of selected.filter((item) => item.type.startsWith("image/"))) {
+        for (const file of images) {
           const gps = await exifr.gps(file).catch(() => undefined);
           const gpsLatitude = gps?.latitude;
           const gpsLongitude = gps?.longitude;
@@ -381,11 +384,19 @@ export default function NewMomentForm({
             setLat(Number(gpsLatitude.toFixed(6)));
             setLng(Number(gpsLongitude.toFixed(6)));
             setExifNote("Lokasi ditemukan otomatis dari foto");
+            found = true;
             break;
           }
         }
       } catch {
         // Pengguna tetap dapat menentukan titik secara manual.
+      }
+
+      // Diam saja saat lokasi tidak ketemu membuat orang mengira fiturnya rusak.
+      // Penyebabnya hampir selalu sama: iOS membuang koordinat kecuali
+      // "Options -> Location" dinyalakan saat memilih foto.
+      if (!found && images.length > 0) {
+        setExifHint(true);
       }
     }
     event.target.value = "";
@@ -407,13 +418,12 @@ export default function NewMomentForm({
     setLocationName("Taman Kota, Bandung");
     setCollection("Cerita Sehari-hari");
     setMood("Hangat");
-    setTags("keluarga, piknik, akhir pekan");
+    setTags("berdua, piknik, akhir pekan");
     setStory("Minggu pagi yang awalnya biasa berubah jadi piknik dadakan. Kami membawa roti, buah, dan satu permainan kartu yang membuat semua tertawa lebih keras dari seharusnya.\n\nTidak ada agenda besar—hanya waktu yang benar-benar kami habiskan bersama.");
     setLat(-6.9175);
     setLng(107.6191);
-    const exampleAuthor = members.find((member) => member.role !== "viewer");
-    if (exampleAuthor) setAuthorId(exampleAuthor.id);
-    setPeopleIds(members.slice(0, 3).map((member) => member.id));
+    if (members[0]) setAuthorId(members[0].id);
+    setPeopleIds(members.map((member) => member.id));
   }
 
   async function submit(event: React.FormEvent) {
@@ -531,7 +541,7 @@ export default function NewMomentForm({
             <label className="field"><span><CalendarDays size={15} /> Tanggal <b>*</b></span><input type="date" value={date} onChange={(event) => setDate(event.target.value)} required /></label>
             <label className="field"><span>Koleksi</span><select value={collection} onChange={(event) => setCollection(event.target.value)}>{collections.map((item) => <option key={item}>{item}</option>)}</select></label>
             <label className="field"><span>Suasana</span><select value={mood} onChange={(event) => setMood(event.target.value)}>{moods.map((item) => <option key={item}>{item}</option>)}</select></label>
-            <label className="field"><span>Tag</span><input value={tags} onChange={(event) => setTags(event.target.value)} placeholder="keluarga, liburan, sunrise" /></label>
+            <label className="field"><span>Tag</span><input value={tags} onChange={(event) => setTags(event.target.value)} placeholder="berdua, liburan, sunrise" /></label>
             <label className="field full">
               <span>Cerita</span>
               <textarea value={story} onChange={(event) => setStory(event.target.value)} rows={8} placeholder="Apa yang terjadi? Siapa yang ada di sana? Hal kecil apa yang paling kamu ingat?" />
@@ -556,8 +566,8 @@ export default function NewMomentForm({
                 <label className="field">
                   <span>Diceritakan oleh</span>
                   <select value={authorId} onChange={(event) => setAuthorId(event.target.value)}>
-                    <option value="">Pilih anggota</option>
-                    {members.filter((member) => member.role !== "viewer").map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}
+                    <option value="">Pilih penulis</option>
+                    {members.map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}
                   </select>
                 </label>
                 <fieldset className="story-people-field field">
@@ -619,6 +629,17 @@ export default function NewMomentForm({
           <div className="form-section-heading"><span>03</span><div><h2>Tandai lokasinya</h2><p>Foto dengan GPS dapat mengisi lokasi secara otomatis.</p></div></div>
           <label className="field"><span><MapPin size={15} /> Nama tempat</span><input value={locationName} onChange={(event) => setLocationName(event.target.value)} placeholder="Contoh: Gunung Bromo, Jawa Timur" /></label>
           {exifNote && <p className="exif-note"><Check size={15} />{exifNote}</p>}
+          {exifHint && !exifNote && (
+            <p className="exif-hint">
+              <MapPin size={15} />
+              <span>
+                Foto ini tidak membawa data lokasi. Di iPhone, ketuk{" "}
+                <strong>Options</strong> di layar pemilih foto lalu nyalakan{" "}
+                <strong>Location</strong> sebelum memilih. Bisa juga tandai
+                sendiri di peta bawah ini.
+              </span>
+            </p>
+          )}
           <div className="location-picker-wrap">
             <LocationPickerLazy lat={lat} lng={lng} onChange={(nextLat, nextLng) => { setLat(nextLat); setLng(nextLng); setExifNote(""); }} />
             {lat !== null && lng !== null && <div className="coordinates"><MapPin size={14} /> {lat}, {lng}<button type="button" onClick={() => { setLat(null); setLng(null); }}>Hapus titik</button></div>}

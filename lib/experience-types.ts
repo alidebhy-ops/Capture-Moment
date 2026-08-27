@@ -2,7 +2,7 @@ export const CAPSULE_THEMES = [
   "surat",
   "harapan",
   "perayaan",
-  "warisan",
+  "janji",
 ] as const;
 
 export type CapsuleTheme = (typeof CAPSULE_THEMES)[number];

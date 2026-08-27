@@ -28,7 +28,7 @@ const mainNav = [
   { href: "/memories", label: "Kilas balik", icon: History },
   { href: "/calendar", label: "Kalender", icon: CalendarDays },
   { href: "/plans", label: "Rencana", icon: ListTodo },
-  { href: "/people", label: "Keluarga", icon: UsersRound },
+  { href: "/people", label: "Profil kita", icon: UsersRound },
 ];
 
 const libraryNav = [
@@ -37,6 +37,7 @@ const libraryNav = [
   { href: "/capsules", label: "Kapsul waktu", icon: LockKeyhole },
   { href: "/inbox", label: "Smart Inbox", icon: Inbox },
   { href: "/archive", label: "Arsip & backup", icon: Archive },
+  { href: "/panduan", label: "Panduan", icon: BookHeart },
   { href: "/settings", label: "Pengaturan", icon: Settings2 },
 ];
 
@@ -102,11 +103,11 @@ export default function AppNav({ demoMode }: { demoMode: boolean }) {
 
         <div className="family-card">
           <div className="avatar-stack" aria-hidden="true">
-            <span>MA</span><span>NA</span><span>RA</span>
+            <span>MA</span><span>RA</span>
           </div>
           <div>
-            <p>Keluarga Akbar</p>
-            <span>{demoMode ? "Ruang demo aktif" : "Ruang keluarga"}</span>
+            <p>Kita Berdua</p>
+            <span>{demoMode ? "Ruang demo aktif" : "Ruang kita"}</span>
           </div>
         </div>
 

@@ -1,13 +1,8 @@
-export const FAMILY_ROLES = ["admin", "contributor", "viewer"] as const;
-
-export type FamilyRole = (typeof FAMILY_ROLES)[number];
-
 export type FamilyMember = {
   id: string;
   name: string;
   initials: string;
   relationship: string;
-  role: FamilyRole;
   bio: string;
   birthday: string;
   color: string;

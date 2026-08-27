@@ -14,7 +14,7 @@ export default function OfflinePage() {
         <h1>Koneksi sedang beristirahat.</h1>
         <p>
           Draft ceritamu tetap aman di perangkat. Sambungkan internet untuk
-          membuka arsip keluarga atau mengunggah media.
+          membuka arsip kita atau mengunggah media.
         </p>
         <Link href="/" className="primary-button"><RefreshCw size={17} /> Coba lagi</Link>
       </section>

@@ -34,8 +34,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     metadataBase,
-    title: { default: "CaptureMoment — Ruang Kenangan Keluarga", template: "%s · CaptureMoment" },
-    description: "Simpan foto, video, cerita, lokasi, serta rencana keluarga dalam satu ruang kenangan yang hangat.",
+    title: { default: "CaptureMoment — Ruang Kenangan Kita", template: "%s · CaptureMoment" },
+    description: "Simpan foto, video, cerita, lokasi, serta rencana kita dalam satu ruang kenangan yang hangat.",
     applicationName: "CaptureMoment",
     // A private family album behind a shared password has no business in search
     // results: the login page is publicly reachable and the deploy URL is
@@ -60,16 +60,16 @@ export async function generateMetadata(): Promise<Metadata> {
       title: "CaptureMoment",
     },
     openGraph: {
-      title: "CaptureMoment — Cerita keluarga, tersimpan selamanya",
-      description: "Foto, video, tempat, cerita, wishlist, dan rencana dalam satu ruang keluarga.",
+      title: "CaptureMoment — Cerita kita, tersimpan selamanya",
+      description: "Foto, video, tempat, cerita, wishlist, dan rencana dalam satu ruang kita.",
       type: "website",
       locale: "id_ID",
-      images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "CaptureMoment — Cerita keluarga, tersimpan selamanya" }],
+      images: [{ url: "/og.jpg", width: 1200, height: 630, alt: "CaptureMoment — Cerita kita, tersimpan selamanya" }],
     },
     twitter: {
       card: "summary_large_image",
       title: "CaptureMoment",
-      description: "Ruang kenangan keluarga yang hidup.",
+      description: "Ruang kenangan berdua yang hidup.",
       images: ["/og.jpg"],
     },
   };

@@ -64,7 +64,7 @@ export default function ThemeSettings() {
     <section className="theme-settings-page">
       <header className="page-header-row theme-settings-header">
         <div>
-          <p className="eyebrow">Personalisasi ruang keluarga</p>
+          <p className="eyebrow">Personalisasi ruang kita</p>
           <h1>Tampilan yang terasa milikmu.</h1>
           <p>
             Pilih pencahayaan dan warna aksen. Perubahan diterapkan langsung
@@ -242,7 +242,7 @@ export default function ThemeSettings() {
               <article className="theme-memory-preview">
                 <Image
                   src="/demo/family.jpg"
-                  alt="Keluarga menikmati waktu bersama"
+                  alt="Menghabiskan waktu berdua"
                   fill
                   sizes="(max-width: 760px) 90vw, 420px"
                 />
@@ -250,7 +250,7 @@ export default function ThemeSettings() {
                 <div>
                   <span>
                     <Heart size={12} fill="currentColor" />
-                    Favorit keluarga
+                    Favorit kita
                   </span>
                   <h3>Piknik kecil di tepi danau</h3>
                   <p>
@@ -265,7 +265,7 @@ export default function ThemeSettings() {
                 </span>
                 <div>
                   <small>Rencana berikutnya</small>
-                  <strong>Liburan keluarga ke Bira</strong>
+                  <strong>Liburan berdua ke Bira</strong>
                 </div>
                 <b>12 hari</b>
               </div>

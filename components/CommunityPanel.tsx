@@ -8,6 +8,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { useMemo, useState, type CSSProperties } from "react";
+import { IDENTITY_COOKIE, persistIdentity, readIdentityFromCookie } from "@/lib/identity";
 import {
   COMMUNITY_REACTIONS,
   type CommunityComment,
@@ -64,13 +65,25 @@ export default function CommunityPanel({
   initialCommunity,
   members,
 }: CommunityPanelProps) {
-  const contributingMembers = members.filter(
-    (member) => member.role !== "viewer"
-  );
   const [community, setCommunity] = useState(initialCommunity);
-  const [authorId, setAuthorId] = useState(
-    contributingMembers[0]?.id ?? ""
-  );
+  // Identitas diingat perangkat supaya tidak perlu dipilih ulang tiap menulis.
+  const [authorId, setAuthorId] = useState(() => {
+    if (typeof document === "undefined") return members[0]?.id ?? "";
+    const stored = document.cookie
+      .split("; ")
+      .find((entry) => entry.startsWith(`${IDENTITY_COOKIE}=`))
+      ?.split("=")[1];
+    return readIdentityFromCookie(stored, members.map((m) => m.id))
+      ?? members[0]?.id
+      ?? "";
+  });
+  const [switchingIdentity, setSwitchingIdentity] = useState(false);
+
+  function chooseIdentity(memberId: string) {
+    setAuthorId(memberId);
+    persistIdentity(memberId);
+    setSwitchingIdentity(false);
+  }
   const [body, setBody] = useState("");
   const [commentPending, setCommentPending] = useState(false);
   const [reactionPending, setReactionPending] =
@@ -233,7 +246,7 @@ export default function CommunityPanel({
     return (
       <section className="community-panel community-panel-empty">
         <UsersRound size={28} />
-        <h2>Undang keluarga ke dalam cerita</h2>
+        <h2>Lengkapi profil kalian dulu</h2>
         <p>
           Tambahkan profil anggota terlebih dahulu agar mereka dapat meninggalkan
           komentar dan reaksi.
@@ -247,33 +260,54 @@ export default function CommunityPanel({
       <header className="community-header">
         <div>
           <p className="community-eyebrow">Cerita bersama</p>
-          <h2 id="community-title">Suara dari keluarga</h2>
+          <h2 id="community-title">Suara kita berdua</h2>
           <p>
             Setiap orang boleh menambahkan ingatan kecil dari sudut pandangnya.
           </p>
         </div>
-        <label className="community-author-picker">
-          <span>Saya menulis sebagai</span>
-          <span
-            className="community-author-select"
-            style={profileStyle(author?.color ?? "#a8573d")}
-          >
-            <b aria-hidden="true">{author?.initials ?? "?"}</b>
-            <select
-              value={authorId}
-              onChange={(event) => setAuthorId(event.target.value)}
-            >
-              {contributingMembers.map((member) => (
-                <option key={member.id} value={member.id}>
-                  {member.name}
-                </option>
-              ))}
-            </select>
-          </span>
-        </label>
+        <div className="community-author-picker">
+          {switchingIdentity || !author ? (
+            <>
+              <span>Kamu yang mana?</span>
+              <div className="community-identity-options">
+                {members.map((member) => (
+                  <button
+                    key={member.id}
+                    type="button"
+                    className="community-identity-option"
+                    style={profileStyle(member.color)}
+                    aria-pressed={member.id === authorId}
+                    onClick={() => chooseIdentity(member.id)}
+                  >
+                    <b aria-hidden="true">{member.initials}</b>
+                    {member.name}
+                  </button>
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <span>Menulis sebagai</span>
+              <span
+                className="community-author-current"
+                style={profileStyle(author.color)}
+              >
+                <b aria-hidden="true">{author.initials}</b>
+                {author.name}
+              </span>
+              <button
+                type="button"
+                className="community-identity-switch"
+                onClick={() => setSwitchingIdentity(true)}
+              >
+                Ganti
+              </button>
+            </>
+          )}
+        </div>
       </header>
 
-      <div className="community-reactions" aria-label="Reaksi keluarga">
+      <div className="community-reactions" aria-label="Reaksi">
         {COMMUNITY_REACTIONS.map((reaction) => {
           const meta = REACTION_META[reaction];
           const people = community.reactions.filter(
@@ -312,7 +346,7 @@ export default function CommunityPanel({
       <div className="community-conversation">
         <div className="community-conversation-title">
           <MessageCircle size={18} />
-          <h3>Komentar keluarga</h3>
+          <h3>Komentar</h3>
           <span>{community.comments.length}</span>
         </div>
 
@@ -332,7 +366,7 @@ export default function CommunityPanel({
                   <div className="community-comment-body">
                     <header>
                       <strong>
-                        {commentAuthor?.name ?? "Anggota keluarga terdahulu"}
+                        {commentAuthor?.name ?? "Profil terdahulu"}
                       </strong>
                       <time dateTime={comment.createdAt}>
                         {formatCommentTime(comment.createdAt)}
@@ -376,7 +410,7 @@ export default function CommunityPanel({
             {author?.initials ?? "?"}
           </span>
           <label>
-            <span className="community-sr-only">Tulis komentar keluarga</span>
+            <span className="community-sr-only">Tulis komentar</span>
             <textarea
               rows={2}
               maxLength={1_200}

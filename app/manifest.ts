@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "CaptureMoment — Ruang Kenangan Keluarga",
+    name: "CaptureMoment — Ruang Kenangan Kita",
     short_name: "CaptureMoment",
     description:
-      "Simpan, rencanakan, dan buka kembali cerita keluarga dari perangkat apa pun.",
+      "Simpan, rencanakan, dan buka kembali cerita kita dari perangkat apa pun.",
     start_url: "/",
     scope: "/",
     display: "standalone",

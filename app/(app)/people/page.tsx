@@ -14,7 +14,7 @@ export default async function PeoplePage() {
     return (
       <div className="feature-load-page">
         <DataLoadNotice
-          title="Profil keluarga belum dapat dimuat"
+          title="Profil kita belum dapat dimuat"
           detail={membersResult.reason instanceof Error ? membersResult.reason.message : "Coba muat ulang setelah koneksi penyimpanan pulih."}
         />
       </div>

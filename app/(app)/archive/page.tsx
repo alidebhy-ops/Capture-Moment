@@ -7,7 +7,7 @@ import { listPlans } from "@/lib/plans";
 export const metadata: Metadata = {
   title: "Arsip & Backup",
   description:
-    "Pantau kesehatan arsip, unduh backup data, dan pulihkan momen keluarga.",
+    "Pantau kesehatan arsip, unduh backup data, dan pulihkan momen kita.",
 };
 
 export const dynamic = "force-dynamic";
@@ -37,7 +37,7 @@ export default async function ArchivePage() {
       ? [resultError(plansResult, "Rencana")]
       : []),
     ...(membersResult.status === "rejected"
-      ? [resultError(membersResult, "Profil keluarga")]
+      ? [resultError(membersResult, "Profil kita")]
       : []),
   ];
 

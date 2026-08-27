@@ -31,7 +31,7 @@ export default async function CollectionsPage() {
             {favorites.slice(0, 3).map((moment) => <img key={moment.id} src={coverThumbSrc(moment, 200)} alt="" loading="lazy" />)}
           </div>
           <div className="favorite-banner-copy">
-            <span className="soft-pill"><Bookmark size={14} fill="currentColor" /> Pilihan keluarga</span>
+            <span className="soft-pill"><Bookmark size={14} fill="currentColor" /> Pilihan kita</span>
             <h2>Momen favorit</h2>
             <p>{favorites.length} cerita yang selalu ingin dibuka kembali.</p>
             <Link href="/?koleksi=Favorit" className="text-link">Buka favorit <ArrowRight size={16} /></Link>

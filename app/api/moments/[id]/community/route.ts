@@ -50,7 +50,7 @@ export async function GET(
     return NextResponse.json({ community: await getMomentCommunity(id) });
   } catch (error) {
     return NextResponse.json(
-      { error: message(error, "Gagal membaca percakapan keluarga.") },
+      { error: message(error, "Gagal membaca percakapan kita.") },
       { status: 500 }
     );
   }
@@ -100,14 +100,8 @@ export async function POST(
     }
     if (!author) {
       return NextResponse.json(
-        { error: "Anggota keluarga tidak ditemukan." },
+        { error: "Profil tidak ditemukan." },
         { status: 404 }
-      );
-    }
-    if (author.role === "viewer") {
-      return NextResponse.json(
-        { error: "Profil pembaca tidak dapat menulis komentar atau reaksi." },
-        { status: 403 }
       );
     }
 
@@ -147,7 +141,7 @@ export async function POST(
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
     return NextResponse.json(
-      { error: message(error, "Gagal menyimpan interaksi keluarga.") },
+      { error: message(error, "Gagal menyimpan interaksi.") },
       { status: 500 }
     );
   }
@@ -188,14 +182,8 @@ export async function DELETE(
     const author = await getFamilyMember(authorId);
     if (!author) {
       return NextResponse.json(
-        { error: "Anggota keluarga tidak ditemukan." },
+        { error: "Profil tidak ditemukan." },
         { status: 404 }
-      );
-    }
-    if (author.role === "viewer") {
-      return NextResponse.json(
-        { error: "Profil pembaca tidak dapat menghapus komentar." },
-        { status: 403 }
       );
     }
     const deleted = await deleteCommunityComment({

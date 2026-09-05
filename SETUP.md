@@ -121,7 +121,7 @@ Batasan: bot Telegram hanya dapat mengunduh berkas hingga 20MB. Video lebih besa
 
 ## Kirim foto dari iPhone lewat Shortcuts
 
-Cara paling otomatis, dan **satu-satunya yang membawa koordinat dengan andal**. Shortcuts membaca lokasi langsung dari pustaka Photos, tempat koordinatnya tidak pernah dihapus — berbeda dengan memilih foto lewat browser, yang membuat iOS membuangnya kecuali kamu menyalakan Options di setiap pemilihan.
+Cara paling otomatis, dan **satu-satunya yang membawa koordinat dengan andal**. Shortcuts membaca lokasi langsung dari pustaka Photos, tempat koordinatnya tidak pernah dihapus — berbeda dengan memilih foto lewat browser: di sana iOS membuang koordinat secara bawaan, dan toggle Location di tombol Options baru ada sejak iOS 17 — itu pun harus dinyalakan ulang setiap kali memilih.
 
 Foto dikelompokkan menurut tanggal pemotretan: kiriman berisi foto tiga hari berbeda menghasilkan tiga momen terpisah, di koleksi **Dari iPhone**.
 

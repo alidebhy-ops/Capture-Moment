@@ -344,9 +344,10 @@ export default function SmartInbox() {
             <div className="inbox-location-note">
               <MapPin size={16} />
               <span>
-                Tidak ada foto yang membawa data lokasi. Di iPhone, ketuk{" "}
-                <strong>Options</strong> di layar pemilih foto lalu nyalakan{" "}
-                <strong>Location</strong> sebelum memilih.
+                Tidak ada foto yang membawa data lokasi. iPhone membuangnya
+                kecuali kamu menyalakan <strong>Location</strong> lewat{" "}
+                <strong>Options</strong> di pojok kiri bawah layar pemilih foto
+                — dan tombol itu hanya ada di iOS 17 ke atas.
               </span>
             </div>
           )}

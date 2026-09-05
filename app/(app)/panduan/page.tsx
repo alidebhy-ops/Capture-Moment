@@ -127,13 +127,15 @@ export default function PanduanPage() {
               penyebabnya.
             </p>
             <p>
-              Saat memilih foto, cari tulisan <strong>Options</strong> di pojok
-              kiri atas layar pemilih foto, ketuk, lalu nyalakan{" "}
-              <strong>Location</strong>. Setelah itu pilih fotonya seperti biasa.
+              Saat layar pemilih foto muncul, lihat pojok <strong>kiri bawah</strong>{" "}
+              — kalau ada tulisan <strong>Options</strong>, ketuk lalu nyalakan{" "}
+              <strong>Location</strong>.
             </p>
             <p className="guide-callout-note">
-              Foto yang dipotret langsung dari dalam aplikasi tidak pernah punya
-              lokasi. Pilih dari galeri kalau ingin lokasinya ikut.
+              Tombol itu hanya ada di iOS 17 ke atas. Kalau tidak ketemu, lokasi
+              memang tidak bisa ikut lewat cara ini — pakai pintasan Share di
+              bawah, atau tandai sendiri di peta. Foto yang dipotret langsung
+              dari dalam aplikasi juga tidak pernah punya lokasi.
             </p>
           </div>
         </div>

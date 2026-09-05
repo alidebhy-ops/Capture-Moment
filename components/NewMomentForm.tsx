@@ -633,9 +633,10 @@ export default function NewMomentForm({
             <p className="exif-hint">
               <MapPin size={15} />
               <span>
-                Foto ini tidak membawa data lokasi. Di iPhone, ketuk{" "}
-                <strong>Options</strong> di layar pemilih foto lalu nyalakan{" "}
-                <strong>Location</strong> sebelum memilih. Bisa juga tandai
+                Foto ini tidak membawa data lokasi. iPhone membuangnya kecuali
+                kamu menyalakan <strong>Location</strong> lewat{" "}
+                <strong>Options</strong> di pojok kiri bawah layar pemilih foto
+                (hanya ada di iOS 17 ke atas). Kalau tidak ketemu, tandai saja
                 sendiri di peta bawah ini.
               </span>
             </p>

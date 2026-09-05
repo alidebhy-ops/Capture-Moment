@@ -18,6 +18,12 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MAX_UPLOAD_BYTES, oversizedMediaMessage } from "@/lib/upload-limits";
+import {
+  averagePoint,
+  clusterPlaces,
+  groupKeysByDateAndPlace,
+  type Point,
+} from "@/lib/geo";
 
 type InboxItem = {
   id: string;
@@ -27,13 +33,22 @@ type InboxItem = {
   date: string;
   lat: number | null;
   lng: number | null;
-  duplicate: boolean;
+  place: number | null;
+  portrait: boolean;
   uploaded?: { id: string; type: "image" | "video" };
+};
+
+type InboxGroup = {
+  key: string;
+  date: string;
+  place: number | null;
+  center: Point | null;
+  files: InboxItem[];
 };
 
 type ImportState =
   | { kind: "idle" }
-  | { kind: "importing"; groupDate: string; done: number; total: number }
+  | { kind: "importing"; groupKey: string; done: number; total: number }
   | { kind: "success"; message: string };
 
 const dateFormatter = new Intl.DateTimeFormat("id-ID", {
@@ -56,8 +71,24 @@ function dateLabel(value: string) {
   return dateFormatter.format(new Date(Date.UTC(year, month - 1, day)));
 }
 
-function fingerprint(file: File) {
-  return `${file.name.toLocaleLowerCase("id")}:${file.size}:${file.lastModified}`;
+// Nama berkas tidak bisa dipercaya: foto yang sama diekspor ulang sering
+// berganti nama. Membandingkan isinya membuat salinan tetap terdeteksi.
+async function fingerprint(file: File): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+// Orientasi dibaca dari gambar aslinya supaya foto potret tidak dipajang
+// terpotong dalam bingkai lanskap.
+function readOrientation(url: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    const image = new Image();
+    image.onload = () => resolve(image.naturalHeight > image.naturalWidth);
+    image.onerror = () => resolve(false);
+    image.src = url;
+  });
 }
 
 const sampleGroups = [
@@ -71,6 +102,9 @@ export default function SmartInbox() {
   const pickerRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
   const itemsRef = useRef<InboxItem[]>([]);
+  // Bertahan walau item sudah diimpor dan dibuang dari daftar, sehingga mengirim
+  // ulang berkas yang sama dalam sesi ini tetap terdeteksi sebagai salinan.
+  const seenHashes = useRef<Set<string>>(new Set());
   const [items, setItems] = useState<InboxItem[]>([]);
   const [titles, setTitles] = useState<Record<string, string>>({});
   const [state, setState] = useState<ImportState>({ kind: "idle" });
@@ -85,19 +119,43 @@ export default function SmartInbox() {
     []
   );
 
-  const groups = useMemo(() => {
-    const map = new Map<string, InboxItem[]>();
-    for (const item of items.filter((entry) => !entry.duplicate)) {
-      const group = map.get(item.date) ?? [];
-      group.push(item);
-      map.set(item.date, group);
+  // Satu momen = satu tanggal di satu tempat. Foto pada hari yang sama tetapi
+  // di tempat berbeda dipisah, begitu pula tempat yang sama pada hari berbeda.
+  const groups = useMemo<InboxGroup[]>(() => {
+    const keys = groupKeysByDateAndPlace(items);
+    const map = new Map<string, InboxGroup>();
+
+    for (const [index, item] of items.entries()) {
+      const key = keys[index];
+      const existing = map.get(key);
+      if (existing) {
+        existing.files.push(item);
+        continue;
+      }
+      map.set(key, {
+        key,
+        date: item.date,
+        place: item.place,
+        center: null,
+        files: [item],
+      });
     }
-    return [...map.entries()]
-      .map(([date, files]) => ({ date, files }))
-      .sort((a, b) => b.date.localeCompare(a.date));
+
+    return [...map.values()]
+      .map((group) => {
+        const points = group.files
+          .filter((item) => item.lat !== null && item.lng !== null)
+          .map((item) => ({ lat: item.lat as number, lng: item.lng as number }));
+        return { ...group, center: points.length ? averagePoint(points) : null };
+      })
+      .sort(
+        (a, b) =>
+          b.date.localeCompare(a.date) ||
+          String(a.place ?? "").localeCompare(String(b.place ?? ""))
+      );
   }, [items]);
 
-  const duplicateCount = items.filter((item) => item.duplicate).length;
+  const [skippedDuplicates, setSkippedDuplicates] = useState(0);
   // Kalau tidak satu pun foto membawa koordinat, penyebabnya hampir selalu iOS
   // yang membuangnya kecuali "Options -> Location" dinyalakan saat memilih.
   const photoCount = items.filter((item) => item.file.type.startsWith("image/")).length;
@@ -111,11 +169,20 @@ export default function SmartInbox() {
       .slice(0, Math.max(0, 40 - items.length));
     if (!accepted.length) return;
 
-    const known = new Set(items.map((item) => fingerprint(item.file)));
+    const known = new Set(seenHashes.current);
     const next: InboxItem[] = [];
+    let duplicates = 0;
 
     for (const file of accepted) {
-      const key = fingerprint(file);
+      const key = await fingerprint(file);
+      // Salinan langsung dibuang, tidak lagi ditandai lalu menunggu dibersihkan
+      // manual. Yang diambil hanya berkas yang benar-benar berbeda isinya.
+      if (known.has(key)) {
+        duplicates += 1;
+        continue;
+      }
+      known.add(key);
+      seenHashes.current.add(key);
       let capturedAt = new Date(file.lastModified || Date.now());
       let lat: number | null = null;
       let lng: number | null = null;
@@ -147,21 +214,37 @@ export default function SmartInbox() {
         }
       }
 
-      const duplicate = known.has(key);
-      known.add(key);
+      const preview = URL.createObjectURL(file);
       next.push({
         id: crypto.randomUUID(),
         file,
-        preview: URL.createObjectURL(file),
+        preview,
         type: file.type.startsWith("video/") ? "video" : "image",
         date: isoDate(capturedAt),
         lat,
         lng,
-        duplicate,
+        place: null,
+        portrait: file.type.startsWith("image/")
+          ? await readOrientation(preview)
+          : false,
       });
     }
 
-    setItems((current) => [...current, ...next]);
+    setSkippedDuplicates((current) => current + duplicates);
+
+    setItems((current) => {
+      const combined = [...current, ...next];
+      // Tempat dihitung ulang atas seluruh isi kotak masuk, supaya foto yang
+      // ditambahkan belakangan tetap menyatu dengan tempat yang sudah ada.
+      const places = clusterPlaces(
+        combined.map((item) =>
+          item.lat !== null && item.lng !== null
+            ? { lat: item.lat, lng: item.lng }
+            : null
+        )
+      );
+      return combined.map((item, index) => ({ ...item, place: places[index] }));
+    });
   }
 
   function onPick(event: React.ChangeEvent<HTMLInputElement>) {
@@ -174,15 +257,6 @@ export default function SmartInbox() {
       const target = current.find((item) => item.id === id);
       if (target) URL.revokeObjectURL(target.preview);
       return current.filter((item) => item.id !== id);
-    });
-  }
-
-  function discardDuplicates() {
-    setItems((current) => {
-      current
-        .filter((item) => item.duplicate)
-        .forEach((item) => URL.revokeObjectURL(item.preview));
-      return current.filter((item) => !item.duplicate);
     });
   }
 
@@ -217,13 +291,14 @@ export default function SmartInbox() {
     return { id: String(payload.id), type };
   }
 
-  async function importGroup(date: string, files: InboxItem[]) {
+  async function importGroup(group: InboxGroup): Promise<boolean> {
+    const { key, date, files } = group;
     setError("");
-    setState({ kind: "importing", groupDate: date, done: 0, total: files.length });
+    setState({ kind: "importing", groupKey: key, done: 0, total: files.length });
     try {
       const media: { id: string; type: "image" | "video" }[] = [];
       for (const [index, inboxItem] of files.entries()) {
-        setState({ kind: "importing", groupDate: date, done: index, total: files.length });
+        setState({ kind: "importing", groupKey: key, done: index, total: files.length });
         const uploaded = inboxItem.uploaded ?? await uploadFile(inboxItem.file);
         media.push(uploaded);
         if (!inboxItem.uploaded) {
@@ -235,8 +310,7 @@ export default function SmartInbox() {
         }
       }
 
-      const locationItem = files.find((item) => item.lat !== null && item.lng !== null);
-      const title = titles[date]?.trim() || `Kenangan ${dateLabel(date)}`;
+      const title = titles[key]?.trim() || `Kenangan ${dateLabel(date)}`;
       const response = await fetch("/api/moments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -245,9 +319,9 @@ export default function SmartInbox() {
           story:
             "Momen ini dikumpulkan melalui Smart Memory Inbox. Tambahkan cerita kecil yang membuat hari ini layak dikenang.",
           date,
-          locationName: locationItem ? "Lokasi ditemukan dari metadata foto" : "",
-          lat: locationItem?.lat ?? null,
-          lng: locationItem?.lng ?? null,
+          locationName: group.center ? "Lokasi dari metadata foto" : "",
+          lat: group.center?.lat ?? null,
+          lng: group.center?.lng ?? null,
           collection: "Smart Inbox",
           mood: "Hangat",
           tags: ["impor otomatis", "inbox"],
@@ -264,18 +338,40 @@ export default function SmartInbox() {
       const importedIds = new Set(files.map((item) => item.id));
       setItems((current) => {
         current
-          .filter((item) => importedIds.has(item.id) || item.duplicate)
+          .filter((item) => importedIds.has(item.id))
           .forEach((item) => URL.revokeObjectURL(item.preview));
-        return current.filter(
-          (item) => !importedIds.has(item.id) && !item.duplicate
-        );
+        return current.filter((item) => !importedIds.has(item.id));
       });
       setState({ kind: "success", message: `“${title}” sudah masuk ke ruang kenangan.` });
       router.refresh();
+      return true;
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Impor belum berhasil.");
       setState({ kind: "idle" });
+      return false;
     }
+  }
+
+  // Semua kelompok sekaligus. Dijalankan berurutan supaya unggahannya tidak
+  // saling berebut, dan berhenti begitu ada yang gagal agar pesan errornya
+  // tidak tertimpa kelompok berikutnya.
+  async function importAll() {
+    const queue = [...groups];
+    let done = 0;
+
+    for (const group of queue) {
+      const ok = await importGroup(group);
+      if (!ok) return;
+      done += 1;
+    }
+
+    setState({
+      kind: "success",
+      message:
+        done === 1
+          ? "1 momen tersimpan."
+          : `${done} momen tersimpan, dipisah menurut tanggal dan tempat.`,
+    });
   }
 
   const busy = state.kind === "importing";
@@ -333,11 +429,17 @@ export default function SmartInbox() {
         <section className="inbox-groups">
           <div className="inbox-summary">
             <div><strong>{groups.length}</strong><span>kelompok cerita</span></div>
-            <div><strong>{items.length - duplicateCount}</strong><span>media siap</span></div>
-            <div><strong>{duplicateCount}</strong><span>duplikat ditahan</span></div>
-            <button type="button" className="secondary-button" onClick={() => pickerRef.current?.click()} disabled={busy}>
-              <ImagePlus size={16} /> Tambah media
-            </button>
+            <div><strong>{items.length}</strong><span>media siap</span></div>
+            <div><strong>{skippedDuplicates}</strong><span>duplikat dilewati</span></div>
+            <div className="inbox-summary-actions">
+              <button type="button" className="secondary-button" onClick={() => pickerRef.current?.click()} disabled={busy}>
+                <ImagePlus size={16} /> Tambah media
+              </button>
+              <button type="button" className="primary-button" onClick={() => void importAll()} disabled={busy || groups.length === 0}>
+                {busy ? <LoaderCircle className="spin" size={16} /> : <Sparkles size={16} />}
+                {groups.length > 1 ? `Jadikan ${groups.length} momen` : "Jadikan momen"}
+              </button>
+            </div>
           </div>
 
           {missingAllLocations && (
@@ -352,40 +454,49 @@ export default function SmartInbox() {
             </div>
           )}
 
-          {duplicateCount > 0 && (
+          {skippedDuplicates > 0 && (
             <div className="inbox-duplicate-note">
               <Check size={16} />
-              <span>{duplicateCount} file dengan nama, ukuran, dan waktu yang sama tidak ikut diimpor.</span>
-              <button type="button" onClick={discardDuplicates} disabled={busy}>
-                Buang duplikat
-              </button>
+              <span>
+                {skippedDuplicates} berkas dilewati karena isinya sama persis
+                dengan foto yang sudah dipilih.
+              </span>
             </div>
           )}
 
           <div className="inbox-group-list">
             {groups.map((group) => {
-              const importing = state.kind === "importing" && state.groupDate === group.date;
+              const importing = state.kind === "importing" && state.groupKey === group.key;
               const gpsCount = group.files.filter((item) => item.lat !== null).length;
               return (
-                <article className="inbox-group-card" key={group.date}>
+                <article className="inbox-group-card" key={group.key}>
                   <div className="inbox-group-heading">
                     <div>
                       <span><CalendarDays size={15} /> {dateLabel(group.date)}</span>
                       <input
-                        value={titles[group.date] ?? ""}
-                        onChange={(event) => setTitles((current) => ({ ...current, [group.date]: event.target.value }))}
+                        value={titles[group.key] ?? ""}
+                        onChange={(event) => setTitles((current) => ({ ...current, [group.key]: event.target.value }))}
                         placeholder={`Kenangan ${dateLabel(group.date)}`}
                         aria-label={`Judul momen ${dateLabel(group.date)}`}
                       />
                     </div>
                     <div className="inbox-group-meta">
                       <span>{group.files.length} media</span>
-                      {gpsCount > 0 && <span><MapPin size={13} /> GPS {gpsCount}</span>}
+                      {group.center ? (
+                        <span>
+                          <MapPin size={13} /> Tempat {(group.place ?? 0) + 1} · GPS {gpsCount}
+                        </span>
+                      ) : (
+                        <span><MapPin size={13} /> Tanpa lokasi</span>
+                      )}
                     </div>
                   </div>
                   <div className="inbox-file-strip">
                     {group.files.map((item) => (
-                      <div key={item.id}>
+                      <div
+                        key={item.id}
+                        className={item.portrait ? "is-portrait" : undefined}
+                      >
                         {item.type === "video" ? (
                           <video src={item.preview} muted />
                         ) : (
@@ -399,7 +510,7 @@ export default function SmartInbox() {
                   </div>
                   <div className="inbox-group-footer">
                     <p>Judul, koleksi, lokasi, dan cerita tetap dapat diedit setelah diimpor.</p>
-                    <button type="button" className="primary-button" onClick={() => void importGroup(group.date, group.files)} disabled={busy}>
+                    <button type="button" className="primary-button" onClick={() => void importGroup(group)} disabled={busy}>
                       {importing ? <LoaderCircle className="spin" size={17} /> : <Sparkles size={16} />}
                       {importing && state.kind === "importing"
                         ? `Mengimpor ${state.done + 1}/${state.total}`

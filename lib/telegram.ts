@@ -1,5 +1,7 @@
 import "server-only";
 
+import { runSerialized } from "./serialize";
+
 // Telegram's own getFile endpoint refuses anything larger than this, so there is
 // no point starting a download we cannot finish.
 export const TELEGRAM_MAX_FILE_BYTES = 20 * 1024 * 1024;
@@ -167,7 +169,6 @@ type MediaGroupEntry = { momentId: string; expiresAt: number };
 
 declare global {
   var captureMomentTelegramGroups: Map<string, MediaGroupEntry> | undefined;
-  var captureMomentTelegramLocks: Map<string, Promise<unknown>> | undefined;
 }
 
 const MEDIA_GROUP_TTL_MS = 5 * 60 * 1000;
@@ -179,13 +180,6 @@ function groupStore(): Map<string, MediaGroupEntry> {
   return globalThis.captureMomentTelegramGroups;
 }
 
-function lockStore(): Map<string, Promise<unknown>> {
-  if (!globalThis.captureMomentTelegramLocks) {
-    globalThis.captureMomentTelegramLocks = new Map();
-  }
-  return globalThis.captureMomentTelegramLocks;
-}
-
 function sweepExpiredGroups(now: number): void {
   const store = groupStore();
   for (const [key, entry] of store) {
@@ -195,31 +189,11 @@ function sweepExpiredGroups(now: number): void {
 
 // Runs one album's bookkeeping at a time. Callers do the slow download and
 // upload outside this, then hand over only the part that must not interleave.
-export async function withMediaGroupLock<T>(
+export function withMediaGroupLock<T>(
   groupId: string,
   task: () => Promise<T>
 ): Promise<T> {
-  const locks = lockStore();
-  const previous = locks.get(groupId) ?? Promise.resolve();
-  const run = previous.then(task, task);
-
-  locks.set(
-    groupId,
-    run.then(
-      () => undefined,
-      () => undefined
-    )
-  );
-
-  try {
-    return await run;
-  } finally {
-    // Only the last waiter clears the slot, so a queue still forming is kept.
-    if (locks.get(groupId) === undefined) locks.delete(groupId);
-    setTimeout(() => {
-      if (lockStore().size > 200) lockStore().clear();
-    }, 0);
-  }
+  return runSerialized(`telegram:${groupId}`, task);
 }
 
 export function rememberMediaGroup(groupId: string, momentId: string): void {

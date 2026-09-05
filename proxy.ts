@@ -13,6 +13,8 @@ const PUBLIC_PATHS = new Set([
   // Telegram has no session cookie; the route authenticates itself with the
   // secret token Telegram echoes back on every webhook call.
   "/api/telegram",
+  // Same for the iOS Shortcut, which carries a bearer token instead.
+  "/api/ingest",
   "/manifest.webmanifest",
   "/sw.js",
   "/favicon.ico",

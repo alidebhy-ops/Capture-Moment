@@ -13,6 +13,7 @@ import {
   MapPin,
   MessageCircleHeart,
   Send,
+  Share2,
   Trash2,
 } from "lucide-react";
 
@@ -156,6 +157,34 @@ export default function PanduanPage() {
               Baris pertama caption jadi judul, sisanya jadi cerita. Kirim
               beberapa foto sekaligus untuk menggabungkannya jadi satu momen,
               lalu kirim lokasi kalau ingin menandai tempatnya.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section className="guide-section">
+        <div className="section-heading-row">
+          <div>
+            <p className="eyebrow">Cara paling cepat dari iPhone</p>
+            <h2>Lewat tombol Share</h2>
+          </div>
+        </div>
+        <div className="guide-callout">
+          <span className="guide-callout-icon"><Share2 size={20} /></span>
+          <div>
+            <p>
+              Kalau pintasan <strong>Simpan ke CaptureMoment</strong> sudah
+              dipasang di iPhone-mu, ini cara tercepat: buka app Photos, pilih
+              berapa pun foto, ketuk <strong>Share</strong>, lalu pilih pintasan
+              itu.
+            </p>
+            <p>
+              Foto dikelompokkan sendiri menurut tanggal pemotretan, dan
+              lokasinya ikut tersimpan tanpa perlu mengatur apa pun.
+            </p>
+            <p className="guide-callout-note">
+              Belum ada pintasannya? Minta pasanganmu memasangnya sekali saja —
+              caranya ada di catatan setup.
             </p>
           </div>
         </div>

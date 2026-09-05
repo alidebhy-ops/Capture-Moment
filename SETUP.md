@@ -119,6 +119,68 @@ Batasan: bot Telegram hanya dapat mengunduh berkas hingga 20MB. Video lebih besa
 
 ---
 
+## Kirim foto dari iPhone lewat Shortcuts
+
+Cara paling otomatis, dan **satu-satunya yang membawa koordinat dengan andal**. Shortcuts membaca lokasi langsung dari pustaka Photos, tempat koordinatnya tidak pernah dihapus — berbeda dengan memilih foto lewat browser, yang membuat iOS membuangnya kecuali kamu menyalakan Options di setiap pemilihan.
+
+Foto dikelompokkan menurut tanggal pemotretan: kiriman berisi foto tiga hari berbeda menghasilkan tiga momen terpisah, di koleksi **Dari iPhone**.
+
+### 1. Buat token
+
+```
+node -e "console.log(require('crypto').randomBytes(24).toString('hex'))"
+```
+
+Isi hasilnya sebagai `INGEST_TOKEN` di `.env.local` dan di Environment Variables Vercel, lalu deploy ulang.
+
+### 2. Susun Shortcut-nya
+
+Buka app **Shortcuts** di iPhone → **+** → beri nama `Simpan ke CaptureMoment`. Tambahkan langkah berikut berurutan:
+
+1. **Receive** — ketuk ikon info (ⓘ) di bawah, nyalakan **Show in Share Sheet**, dan atur input menerima **Images and Media**.
+2. **Repeat with Each** — isinya Shortcut Input. Semua langkah berikutnya masuk ke dalam blok ini.
+3. **Get Details of Images** → pilih **Metadata Dictionary**, sumbernya Repeat Item.
+   Ini bagian yang menentukan. Jangan pakai properti **Location** — yang itu mengembalikan nama jalan, bukan angka koordinat.
+4. **Get Dictionary Value** → key `{GPS}` dari hasil langkah 3.
+5. **Get Dictionary Value** → key `Latitude` dari hasil langkah 4. Ganti nama variabelnya jadi `Lat`.
+6. **Get Dictionary Value** → key `Longitude` dari hasil langkah 4. Ganti nama variabelnya jadi `Lng`.
+7. **Get Details of Images** → pilih **Date Taken**, sumbernya Repeat Item.
+8. **Format Date** → format **Custom**, isi dengan `yyyy-MM-dd`. Ganti nama variabelnya jadi `Tanggal`.
+9. **Convert Image** → ke **JPEG**, dan matikan **Preserve Metadata** (koordinatnya sudah dikirim terpisah, jadi tidak perlu ikut di dalam berkas).
+10. **Resize Image** → lebar **2000** piksel. Langkah ini penting: foto iPhone asli sering melebihi batas 4 MB dan akan ditolak.
+11. **Get Contents of URL** — bagian terakhir:
+    - URL: `https://alamat-kamu.vercel.app/api/ingest`
+    - Method: **POST**
+    - Headers: tambahkan `Authorization` bernilai `Bearer TOKEN_KAMU`
+    - Request Body: **Form**
+    - Field `file` → tipe **File**, isinya hasil Resize Image
+    - Field `takenAt` → tipe Text, isinya variabel `Tanggal`
+    - Field `lat` → tipe Text, isinya variabel `Lat`
+    - Field `lng` → tipe Text, isinya variabel `Lng`
+
+### 3. Cara memakainya
+
+Buka app **Photos**, pilih berapa pun foto, ketuk **Share**, lalu pilih **Simpan ke CaptureMoment**. Selesai.
+
+### 4. (Opsional) Jalankan sendiri tiap malam
+
+Di tab **Automation** → **+** → **Time of Day** → pilih jam, misalnya 21.00 → **Run Immediately**, dan matikan **Notify When Run**.
+
+Buat Shortcut kedua yang isinya sama, tetapi langkah pertama diganti **Find Photos** dengan filter *Date Taken is today*, lalu Repeat with Each atas hasilnya.
+
+Perlu diketahui: iOS **tidak punya pemicu "ada foto baru"**. Jadi yang benar-benar otomatis berupa kiriman harian, bukan seketika setelah memotret.
+
+### Kalau bermasalah
+
+| Balasan | Artinya |
+|---|---|
+| `401 Token tidak berlaku` | Header Authorization salah, atau `INGEST_TOKEN` di Vercel berbeda dengan yang di Shortcut |
+| `413` | Foto masih terlalu besar — pastikan langkah Resize Image ada dan sebelum pengiriman |
+| `503` | `INGEST_TOKEN` belum diisi di environment |
+| Tersimpan tapi tanpa lokasi | Fotonya memang tidak punya GPS, atau langkah 3 memakai Location alih-alih Metadata Dictionary |
+
+---
+
 ## Impor dari Google Photos
 
 Tombolnya ada di halaman **Smart Inbox**. Google membuka pemilih fotonya sendiri, kamu memilih di sana, lalu salinannya masuk ke folder Drive album.
